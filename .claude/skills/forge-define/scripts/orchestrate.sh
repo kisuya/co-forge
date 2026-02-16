@@ -82,7 +82,9 @@ run_coding_session() {
   if [ "$AGENT" = "codex" ]; then
     codex exec --full-auto "$1"
   else
-    claude -p "$1"
+    # --dangerously-skip-permissions: autonomous mode requires no human approval.
+    # The human gate is at /forge-project and /forge-retro, not during coding.
+    claude -p --dangerously-skip-permissions "$1"
   fi
 }
 
