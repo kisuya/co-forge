@@ -58,13 +58,34 @@ print(done, pending, blocked, total)
 
 echo "Features: $DONE done / $TOTAL total ($PENDING pending, $BLOCKED blocked)"
 
-# --- Completed feature IDs ---
+# --- Completed feature IDs (all-time, for progress.txt) ---
 COMPLETED_IDS=$(python3 -c "
 import json
 with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 done_ids = [f['id'] for f in data['features'] if f['status'] == 'done']
 print(', '.join(done_ids) if done_ids else 'none')
+")
+
+# --- Delta: newly completed feature IDs (this session only, for commit message) ---
+NEW_IDS=$(python3 -c "
+import json, re
+
+prev_done = set()
+try:
+    with open('docs/projects/current/progress.txt') as f:
+        content = f.read()
+    matches = re.findall(r'Features done \(all-time\): (.+)', content)
+    if matches:
+        prev_done = {x.strip() for x in matches[-1].split(',')}
+except FileNotFoundError:
+    pass
+
+with open('docs/projects/current/features.json') as f:
+    data = json.load(f)
+done_ids = [f['id'] for f in data['features'] if f['status'] == 'done']
+new_ids = [fid for fid in done_ids if fid not in prev_done]
+print(', '.join(new_ids) if new_ids else 'no new features')
 ")
 
 # --- Run full tests ---
@@ -102,7 +123,11 @@ echo ""
 # --- Git commit (if tests pass and there are changes) ---
 if [ "$TEST_EXIT" -eq 0 ]; then
   if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet HEAD 2>/dev/null; then
-    COMMIT_MSG="Session $SESSION_NUM: $COMPLETED_IDS ($DONE/$TOTAL done)"
+    if [ "$NEW_IDS" = "no new features" ]; then
+      COMMIT_MSG="Session $SESSION_NUM: checkpoint ($DONE/$TOTAL done)"
+    else
+      COMMIT_MSG="Session $SESSION_NUM: $NEW_IDS ($DONE/$TOTAL done)"
+    fi
     git add -A 2>/dev/null && \
     git commit -m "$COMMIT_MSG" 2>/dev/null && \
     echo "Git: committed — $COMMIT_MSG" || echo "Git: commit skipped (write not available)"

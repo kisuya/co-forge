@@ -86,6 +86,12 @@ build_prompt() {
   local SPEC=$(cat docs/projects/current/spec.md 2>/dev/null)
   local FEATURES=$(cat docs/projects/current/features.json 2>/dev/null)
 
+  # Git context from the last commit — shows what the previous session built
+  local PREV_SESSION=""
+  if git log --oneline -1 2>/dev/null | grep -q .; then
+    PREV_SESSION=$(git log -1 --stat --no-color 2>/dev/null | head -30)
+  fi
+
   cat << PROMPT
 Read AGENTS.md for project context and rules. For this autonomous session, follow the protocol below (overrides AGENTS.md Session Start Protocol).
 
@@ -97,8 +103,15 @@ Read AGENTS.md for project context and rules. For this autonomous session, follo
 5. Write tests for the feature
 6. Run: ./.forge/scripts/test_fast.sh
 7. If tests pass, update features.json: change that feature's status to "done"
-8. If time remains, pick the next available feature and repeat from step 3
+8. Before picking the next feature, check if it belongs to the same domain as your current work:
+   - Same domain (e.g., auth-001 → auth-002): continue, repeat from step 3
+   - Different domain (e.g., auth-003 → notify-001): stop and exit — this is a context boundary
+9. Hard limit: stop after 10 features regardless of domain continuity
 - Do NOT run git commit — the orchestrator commits between sessions via checkpoint.sh
+- Do NOT try to finish all remaining features in one session — exit at context boundaries so each session produces a focused, coherent changeset
+
+## Previous Session (git log)
+${PREV_SESSION:-First session — no previous context.}
 
 ## Current Project
 $SPEC

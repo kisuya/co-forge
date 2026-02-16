@@ -165,6 +165,9 @@ Sprint checkpoints and project retrospectives are fundamentally different:
    - Claude: `--dangerously-skip-permissions` (autonomous, no human approval)
    - Codex: `--sandbox danger-full-access` (full filesystem including .git)
 8. **Clear exit message**: Tell the user to run /forge-retro (or $forge-retro) next.
+9. **Context-based sessions**: Sessions exit at domain boundaries, not at fixed feature counts. When the next pending feature belongs to a different domain than what the agent has been building, the session stops. This produces focused commits (e.g., "auth-001, auth-002, auth-003") instead of scattered ones. Hard ceiling at 10 features to prevent runaways.
+10. **Session context continuity**: Each session prompt includes `git log --stat` of the previous checkpoint commit, so the agent knows what the previous session built.
+11. **Delta commit messages**: checkpoint.sh compares current done IDs against the previous session's done IDs. The commit message only shows newly completed features, not the cumulative list.
 
 ## What Goes WHERE
 
