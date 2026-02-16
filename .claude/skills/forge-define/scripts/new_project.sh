@@ -13,6 +13,11 @@ if [ -d "docs/projects/$PROJECT_NAME" ]; then
   exit 1
 fi
 
+if [ ! -d "docs/projects/current" ]; then
+  echo "Error: docs/projects/current/ does not exist. Nothing to archive."
+  exit 1
+fi
+
 mv docs/projects/current "docs/projects/$PROJECT_NAME"
 mkdir -p docs/projects/current
 echo "# New Project" > docs/projects/current/spec.md

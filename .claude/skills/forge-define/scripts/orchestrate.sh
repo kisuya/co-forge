@@ -12,8 +12,8 @@
 #   3. Check: done? stuck? max reached? → exit or continue
 #
 # Does NOT do:
-#   - Project retrospective (you do: /forge-retro)
-#   - Next project creation (you do: /forge-project)
+#   - Project retrospective (you do: /forge-retro or $forge-retro)
+#   - Next project creation (you do: /forge-project or $forge-project)
 
 AGENT="${1:-claude}"
 MAX_SESSIONS="${2:-20}"
@@ -45,21 +45,34 @@ trap cleanup SIGINT SIGTERM
 echo $$ > "$PID_FILE"
 
 get_pending() {
-  python3 -c "
+  local val
+  val=$(python3 -c "
 import json
 with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 print(sum(1 for f in data['features'] if f['status'] != 'done'))
-"
+" 2>/dev/null) || val=""
+  if [[ "$val" =~ ^[0-9]+$ ]]; then
+    echo "$val"
+  else
+    echo "ERROR: Failed to read features.json" >&2
+    echo "-1"
+  fi
 }
 
 get_done() {
-  python3 -c "
+  local val
+  val=$(python3 -c "
 import json
 with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 print(sum(1 for f in data['features'] if f['status'] == 'done'))
-"
+" 2>/dev/null) || val=""
+  if [[ "$val" =~ ^[0-9]+$ ]]; then
+    echo "$val"
+  else
+    echo "0"
+  fi
 }
 
 build_prompt() {
@@ -112,6 +125,13 @@ run_coding_session() {
 
 PREV_PENDING=$(get_pending)
 
+if [ "$PREV_PENDING" -eq -1 ]; then
+  echo "Error: Could not read docs/projects/current/features.json."
+  echo "Run /forge-project (Claude) or \$forge-project (Codex) to create a project first."
+  rm -f "$PID_FILE"
+  exit 1
+fi
+
 echo "=== Forge Orchestrator ==="
 echo "Agent: $AGENT"
 echo "Max sessions: $MAX_SESSIONS"
@@ -121,6 +141,7 @@ echo ""
 
 if [ "$PREV_PENDING" -eq 0 ]; then
   echo "No pending features. Run /forge-project (Claude) or \$forge-project (Codex) to create a new project first."
+  rm -f "$PID_FILE"
   exit 0
 fi
 

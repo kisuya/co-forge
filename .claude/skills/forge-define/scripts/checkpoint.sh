@@ -90,18 +90,3 @@ echo "Done: $DONE / $TOTAL"
 echo "Remaining: $PENDING pending, $BLOCKED blocked"
 echo "Tests: $TEST_STATUS"
 
-# --- Update dependency blocking ---
-python3 -c "
-import json
-with open('docs/projects/current/features.json') as f:
-    data = json.load(f)
-done_ids = {f['id'] for f in data['features'] if f['status'] == 'done'}
-changed = False
-for feat in data['features']:
-    if feat['status'] == 'pending':
-        deps = feat.get('depends_on', [])
-        all_met = all(d in done_ids for d in deps)
-        # No status change here — just informational
-with open('docs/projects/current/features.json', 'w') as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-" 2>/dev/null
