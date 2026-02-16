@@ -15,16 +15,23 @@ SKILL_DIR="$(dirname "$SCRIPT_DIR")"
 echo "=== Forge Scaffold ==="
 
 # --- Step 0: Guard against pushing to template repo ---
-TEMPLATE_REPO="kisuya/co-forge"
 ORIGIN_URL=$(git remote get-url origin 2>/dev/null || echo "")
 
-if echo "$ORIGIN_URL" | grep -qi "$TEMPLATE_REPO"; then
+# Exact match: kisuya/co-forge.git or kisuya/co-forge (not co-forge-xxx)
+if echo "$ORIGIN_URL" | grep -qE 'kisuya/co-forge(\.git)?$'; then
   echo ""
-  echo "⚠  Warning: origin이 템플릿 저장소($TEMPLATE_REPO)를 가리키고 있습니다."
+  echo "⚠  Warning: origin이 템플릿 저장소(kisuya/co-forge)를 가리키고 있습니다."
   echo "   이대로 push하면 원본 템플릿 저장소를 덮어씁니다."
   echo ""
-  read -rp "origin remote를 제거할까요? (Y/n): " ANSWER
-  ANSWER=${ANSWER:-Y}
+  if [ -t 0 ]; then
+    # Interactive: prompt user
+    read -rp "origin remote를 제거할까요? (Y/n): " ANSWER
+    ANSWER=${ANSWER:-Y}
+  else
+    # Non-interactive (agent/CI): auto-remove
+    ANSWER="Y"
+    echo "  (비대화형 환경 감지 — origin을 자동 제거합니다)"
+  fi
   if [[ "$ANSWER" =~ ^[Yy]$ ]]; then
     git remote remove origin
     echo "  ✓ origin remote를 제거했습니다."
