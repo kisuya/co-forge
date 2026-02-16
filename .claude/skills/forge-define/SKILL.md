@@ -110,11 +110,20 @@ Write `docs/conventions.md`:
 Write `docs/tech_stack.md` — quick-reference:
 - Runtime, framework, database, testing, dev tools, dependencies, setup commands
 
+### Step 6: Write README.md
+
+Replace the template README with the product's own README:
+- Product name and one-line description
+- Quick start (setup, run, test)
+- Link to `docs/` for detailed documentation
+
+Keep it short. README is the entry point — details live in `docs/`.
+
 ---
 
 ## Part B: Agent Harness
 
-### Step 6: Write AGENTS.md ← AI judgment
+### Step 7: Write AGENTS.md ← AI judgment
 
 **This is the only harness step that needs AI reasoning.**
 
@@ -134,7 +143,7 @@ Read `references/agents_md_guide.md`. Write `AGENTS.md` in repo root:
 
 Keep under 50 lines. Every word costs context window.
 
-### Step 7: Run Scaffold
+### Step 8: Run Scaffold
 
 Run the scaffold script to install all harness infrastructure:
 
@@ -153,7 +162,7 @@ The script automatically:
 8. Initializes git if needed
 9. Verifies the full structure
 
-### Step 8: Git Commit
+### Step 9: Git Commit
 
 If scaffold.sh already created an initial commit (new git repo), verify all files are tracked.
 Otherwise, commit:
@@ -163,7 +172,7 @@ git add -A
 git commit -m "Initial harness setup (forge-define)"
 ```
 
-### Step 9: Final Verify
+### Step 10: Final Verify
 
 After scaffold completes:
 1. `.forge/scripts/init.sh` runs without errors
