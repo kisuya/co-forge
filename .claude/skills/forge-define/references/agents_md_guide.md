@@ -21,7 +21,7 @@ Bad: "Write clean code."
 Good: "Files must not exceed 300 lines."
 
 Bad: "Test your code."
-Good: "Run scripts/test_fast.sh before every commit."
+Good: "Run .forge/scripts/test_fast.sh before every commit."
 
 ## Only Include Rules That Agents Violate
 

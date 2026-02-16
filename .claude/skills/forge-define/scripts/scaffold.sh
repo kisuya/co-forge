@@ -221,6 +221,7 @@ PASS=true
 [ -f ".forge/scripts/orchestrate.sh" ]       && echo "  ✓ .forge/scripts/orchestrate.sh" || { echo "  ✗ .forge/scripts/orchestrate.sh"; PASS=false; }
 [ -f ".forge/scripts/test_fast.sh" ]         && echo "  ✓ .forge/scripts/test_fast.sh"   || { echo "  ✗ .forge/scripts/test_fast.sh"; PASS=false; }
 [ -f ".forge/scripts/upgrade.sh" ]           && echo "  ✓ .forge/scripts/upgrade.sh"     || { echo "  ✗ .forge/scripts/upgrade.sh"; PASS=false; }
+[ -f ".forge/scripts/new_project.sh" ]       && echo "  ✓ .forge/scripts/new_project.sh" || { echo "  ✗ .forge/scripts/new_project.sh"; PASS=false; }
 [ -d ".forge/templates" ]                    && echo "  ✓ .forge/templates/"              || { echo "  ✗ .forge/templates/"; PASS=false; }
 [ -f "docs/projects/current/features.json" ] && echo "  ✓ docs/projects/current/"    || { echo "  ✗ docs/projects/current/"; PASS=false; }
 [ -d "tests" ]                               && echo "  ✓ tests/"                        || { echo "  ✗ tests/"; PASS=false; }

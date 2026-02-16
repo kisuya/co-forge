@@ -55,7 +55,7 @@ echo ""
 echo "=== Running Full Tests ==="
 TEST_OUTPUT=$(./.forge/scripts/test_fast.sh 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
 
-if [ $TEST_EXIT -eq 0 ]; then
+if [ "$TEST_EXIT" -eq 0 ]; then
   TEST_STATUS="all pass"
   echo "Tests: PASS"
 else

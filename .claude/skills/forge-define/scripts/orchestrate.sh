@@ -48,7 +48,7 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM
 
-echo $$ > "$PID_FILE"
+echo "$$" > "$PID_FILE"
 
 get_pending() {
   local val
@@ -121,7 +121,7 @@ run_coding_session() {
     codex exec --full-auto "$1" &
   else
     # --dangerously-skip-permissions: autonomous mode requires no human approval.
-    # The human gate is at /forge-project and /forge-retro, not during coding.
+    # The human gate is at forge-project and forge-retro, not during coding.
     claude -p --dangerously-skip-permissions "$1" &
   fi
   CHILD_PID=$!
