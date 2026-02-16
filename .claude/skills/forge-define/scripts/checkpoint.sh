@@ -33,6 +33,12 @@ for f in data['features']:
     if 'id' not in f or 'status' not in f:
         print(f'ERROR: feature missing \"id\" or \"status\" key: {f}', file=sys.stderr)
         sys.exit(1)
+    if 'description' not in f or not f['description'].strip():
+        print(f'ERROR: feature \"{f[\"id\"]}\" missing or empty \"description\".', file=sys.stderr)
+        sys.exit(1)
+    if f['description'].strip() == f.get('name', '').strip():
+        print(f'ERROR: feature \"{f[\"id\"]}\" description is identical to name.', file=sys.stderr)
+        sys.exit(1)
 " 2>/dev/null || {
   echo "ERROR: docs/projects/current/features.json is invalid (bad JSON or missing schema)."
   exit 1
