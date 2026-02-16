@@ -27,7 +27,7 @@ python3 -c "import json; json.load(open('docs/projects/current/features.json'))"
 }
 
 # --- Count features ---
-read DONE PENDING BLOCKED TOTAL <<< $(python3 -c "
+read -r DONE PENDING BLOCKED TOTAL <<< $(python3 -c "
 import json
 with open('docs/projects/current/features.json') as f:
     data = json.load(f)
@@ -53,8 +53,7 @@ print(', '.join(done_ids) if done_ids else 'none')
 # --- Run full tests ---
 echo ""
 echo "=== Running Full Tests ==="
-TEST_OUTPUT=$(./.forge/scripts/test_fast.sh 2>&1) || true
-TEST_EXIT=$?
+TEST_OUTPUT=$(./.forge/scripts/test_fast.sh 2>&1) && TEST_EXIT=0 || TEST_EXIT=$?
 
 if [ $TEST_EXIT -eq 0 ]; then
   TEST_STATUS="all pass"

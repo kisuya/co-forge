@@ -2,11 +2,16 @@
 # Session start briefing — run this at the beginning of every coding session.
 # Shows project state so the agent knows what to work on.
 
+if [ ! -f "docs/projects/current/features.json" ]; then
+  echo "No active project. Run /forge-project (Claude) or \$forge-project (Codex) first."
+  exit 0
+fi
+
 echo "=== Session Start: $(date) ==="
 
 echo ""
 echo "=== Project Goal ==="
-head -5 docs/projects/current/spec.md
+head -5 docs/projects/current/spec.md 2>/dev/null || echo "  (no spec.md)"
 
 echo ""
 echo "=== Recent Commits ==="
@@ -14,7 +19,7 @@ git log --oneline -5 2>/dev/null || echo "  (no commits yet)"
 
 echo ""
 echo "=== Progress ==="
-cat docs/projects/current/progress.txt
+cat docs/projects/current/progress.txt 2>/dev/null || echo "  (no progress yet)"
 
 echo ""
 echo "=== Pending Features ==="

@@ -35,7 +35,7 @@ No separate setup skill needed.
 
 ### Bash Scripts — no AI tokens needed
 
-All scripts live in `.forge/scripts/` (gitignored).
+All scripts live in `.forge/scripts/` (git tracked).
 
 | Script | Role | Called by |
 |--------|------|----------|
@@ -55,6 +55,8 @@ my-project/
 │       ├── forge-define/  ← includes scripts/ and templates/ source
 │       ├── forge-project/
 │       └── forge-retro/
+├── .agents/
+│   └── skills/            ← Codex용 symlinks → .claude/skills/
 ├── .forge/                ← git tracked (runtime infrastructure)
 │   ├── scripts/           ← copied from forge-define/scripts/ by scaffold.sh
 │   └── templates/         ← copied from forge-define/templates/ by scaffold.sh
@@ -91,14 +93,14 @@ whether retro was run.
 The user works with the agent directly. No automation.
 
 ```
-[Claude Code interactive session]
+[Claude Code / Codex interactive session]
 
-> /forge-project                       ← scope the work (includes backlog review)
+> /forge-project (or $forge-project)   ← scope the work (includes backlog review)
 > (code together with the agent)
 > .forge/scripts/checkpoint.sh         ← quick checkpoint when you want
 > (continue coding)
-> /forge-retro                         ← project done → retrospective
-> /forge-project                       ← next project
+> /forge-retro (or $forge-retro)       ← project done → retrospective
+> /forge-project (or $forge-project)   ← next project
 ```
 
 Best for: small projects, learning the workflow, when you want control.
@@ -108,20 +110,20 @@ Best for: small projects, learning the workflow, when you want control.
 Coding + sprint checkpoints are automated. Retro + project scoping are human.
 
 ```
-[Interactive] > /forge-project                      ← human scopes the work
+[Interactive] > /forge-project (or $forge-project)  ← human scopes the work
 [Terminal]    $ ./.forge/scripts/orchestrate.sh      ← script automates coding loop
                 → coding session 1 → checkpoint.sh
                 → coding session 2 → checkpoint.sh
                 → coding session 3 → all features done → exit
-[Interactive] > /forge-retro                        ← human does retrospective
-[Interactive] > /forge-project                      ← human scopes next project
+[Interactive] > /forge-retro (or $forge-retro)      ← human does retrospective
+[Interactive] > /forge-project (or $forge-project)  ← human scopes next project
 [Terminal]    $ ./.forge/scripts/orchestrate.sh      ← automate again
 ```
 
 The cycle:
-1. **Human decides WHAT** → /forge-project (interactive, includes backlog review)
+1. **Human decides WHAT** → /forge-project or $forge-project (interactive, includes backlog review)
 2. **Machine does HOW** → orchestrate.sh (autonomous, agents append to backlog)
-3. **Human reflects WHY** → /forge-retro (interactive, processes backlog)
+3. **Human reflects WHY** → /forge-retro or $forge-retro (interactive, processes backlog)
 4. Repeat
 
 Best for: most projects. Maximizes token usage while keeping human judgment at decision points.
@@ -158,7 +160,7 @@ Sprint checkpoints and project retrospectives are fundamentally different:
 5. **Stuck detection**: If pending count doesn't decrease, stop. The agent is stuck.
 6. **Max session limit**: Always cap iterations. Default 20.
 7. **Agent-agnostic**: Support both claude and codex via parameter.
-8. **Clear exit message**: Tell the user to run /forge-retro next.
+8. **Clear exit message**: Tell the user to run /forge-retro (or $forge-retro) next.
 
 ## What Goes WHERE
 
@@ -180,7 +182,7 @@ Sprint checkpoints and project retrospectives are fundamentally different:
 - **AI doing mechanical work**: Using an agent session for tests + feature counting
 - **Separate setup skill**: Wasting a full AI session on mkdir + file copy
 - **Headless retrospective**: Running forge-retro without human input
-- **Skipping backlog review**: Running /forge-project without checking docs/backlog.md
+- **Skipping backlog review**: Running /forge-project (or $forge-project) without checking docs/backlog.md
 - **Implicit role**: Instructions that blur agent vs user responsibilities
 - **Unbounded loops**: orchestrate.sh without max iteration or stuck detection
 - **Agent modifying features.json scope**: Agent should only change status, never add new features

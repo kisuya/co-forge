@@ -2,6 +2,8 @@
 # Archive the current project and prepare a clean slate.
 # Usage: ./.forge/scripts/new_project.sh <project-name>
 
+set -e
+
 [ -z "$1" ] && echo "Usage: ./.forge/scripts/new_project.sh <project-name>" && exit 1
 
 PROJECT_NAME="$1"

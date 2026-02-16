@@ -5,7 +5,7 @@
 # Usage: bash /path/to/forge-define/scripts/scaffold.sh
 #
 # The script finds its sibling files using its own directory location.
-# All harness files go into .forge/ (gitignored). Product code stays in root.
+# All harness files go into .forge/ (git tracked). Product code stays in root.
 
 set -e
 
@@ -132,7 +132,7 @@ if [ ! -f "docs/backlog.md" ]; then
 # Backlog
 
 Items discovered during development or brainstormed outside coding sessions.
-Reviewed at the start of each /forge-project.
+Reviewed at the start of each /forge-project (Claude) or $forge-project (Codex).
 
 <!-- Format: - [source] description -->
 BLEOF
