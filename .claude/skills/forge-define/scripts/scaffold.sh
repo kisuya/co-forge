@@ -183,6 +183,9 @@ if [ ! -d ".git" ]; then
   echo "Initializing git..."
   git init -q
   cat > .gitignore << 'GITEOF'
+# Forge: active project state (per-developer)
+docs/projects/current/
+
 # Common ignores
 node_modules/
 __pycache__/
@@ -197,6 +200,13 @@ GITEOF
   git commit -q -m "Initial harness setup (forge scaffold)"
   echo "  Git initialized with initial commit."
 else
+  # Ensure docs/projects/current/ is gitignored even on existing repos
+  if ! grep -q "docs/projects/current/" .gitignore 2>/dev/null; then
+    echo "" >> .gitignore
+    echo "# Forge: active project state (per-developer)" >> .gitignore
+    echo "docs/projects/current/" >> .gitignore
+    echo "  Added docs/projects/current/ to .gitignore"
+  fi
   echo "  Git already initialized."
 fi
 
@@ -215,6 +225,7 @@ PASS=true
 [ -f "docs/projects/current/features.json" ] && echo "  ✓ docs/projects/current/"    || { echo "  ✗ docs/projects/current/"; PASS=false; }
 [ -d "tests" ]                               && echo "  ✓ tests/"                        || { echo "  ✗ tests/"; PASS=false; }
 [ -f "docs/backlog.md" ]                     && echo "  ✓ docs/backlog.md"               || { echo "  ✗ docs/backlog.md"; PASS=false; }
+grep -q "docs/projects/current/" .gitignore 2>/dev/null && echo "  ✓ docs/projects/current/ in .gitignore" || { echo "  ✗ docs/projects/current/ not in .gitignore"; PASS=false; }
 
 echo ""
 if $PASS; then

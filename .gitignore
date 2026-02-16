@@ -1,3 +1,6 @@
+# Forge: active project state (per-developer)
+docs/projects/current/
+
 # Common ignores
 node_modules/
 __pycache__/

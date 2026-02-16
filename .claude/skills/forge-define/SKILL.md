@@ -141,8 +141,9 @@ The script automatically:
 4. Installs all templates for forge-project and forge-retro
 5. Creates project placeholders and smoke test
 6. Creates `docs/backlog.md` for feature discovery tracking
-7. Initializes git if needed
-8. Verifies the full structure
+7. Adds `docs/projects/current/` to .gitignore (active state is per-developer)
+8. Initializes git if needed
+9. Verifies the full structure
 
 ### Step 8: Git Commit
 
@@ -160,6 +161,7 @@ After scaffold completes:
 2. `.forge/scripts/test_fast.sh` passes smoke test
 3. All docs/ files exist (including backlog.md, projects/current/)
 4. AGENTS.md exists and is under 50 lines
+5. `docs/projects/current/` is in .gitignore
 
 ### Handoff
 

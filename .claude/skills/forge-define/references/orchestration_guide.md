@@ -57,15 +57,14 @@ my-project/
 │       └── forge-retro/
 ├── .forge/                ← git tracked (runtime infrastructure)
 │   ├── scripts/           ← copied from forge-define/scripts/ by scaffold.sh
-│   ├── templates/         ← copied from forge-define/templates/ by scaffold.sh
-│   └── projects/
-│       ├── current/       ← GITIGNORED (per-developer working state)
-│       └── {archived}/    ← git tracked (completed projects + retrospective)
+│   └── templates/         ← copied from forge-define/templates/ by scaffold.sh
 ├── AGENTS.md              ← git tracked
 ├── docs/                  ← git tracked
 │   ├── prd.md, architecture.md, conventions.md, tech_stack.md
 │   ├── backlog.md         ← shared: agents append, humans add ideas
-│   └── projects/          ← project state + archived history
+│   └── projects/
+│       ├── current/       ← GITIGNORED (per-developer working state)
+│       └── {archived}/    ← git tracked (completed projects + retrospective)
 ├── src/                   ← git tracked (product code)
 ├── tests/                 ← git tracked (product tests)
 └── .gitignore

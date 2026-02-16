@@ -96,7 +96,8 @@ co-forge/
 | `.claude/skills/` | O | 스킬 원본 |
 | `.agents/skills/` | O | Codex용 symlink → `.claude/skills/` |
 | `.forge/scripts/`, `.forge/templates/` | O | 팀이 동일한 인프라 공유 |
-| `docs/projects/` | O | 프로젝트 상태 + 이력 (팀 공유) |
+| `docs/projects/{archived}/` | O | 완료된 프로젝트 이력 (팀 공유) |
+| `docs/projects/current/` | X | 활성 프로젝트 상태 (개발자별, .gitignore) |
 | `AGENTS.md`, `docs/` | O | 제품 문서 |
 | `src/`, `tests/` | O | 제품 코드 |
 
