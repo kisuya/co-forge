@@ -133,7 +133,8 @@ Read `references/agents_md_guide.md`. Write `AGENTS.md` in repo root:
 - **Pointers to docs/**: 3-4 lines linking to prd, architecture, conventions, tech_stack
 - **Absolute Rules** (5-7 items): Only rules agents commonly violate
   - Never modify tests
-  - Run .forge/scripts/test_fast.sh before every commit
+  - Run .forge/scripts/test_fast.sh before marking a feature done
+  - Do NOT run git commit — checkpoint.sh handles commits between sessions
   - Update docs/projects/current/features.json when completing a feature
   - Append to docs/backlog.md if new features discovered (never modify features.json scope)
   - Files must not exceed 300 lines

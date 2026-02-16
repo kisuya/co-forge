@@ -16,8 +16,9 @@
 1. Never delete or modify existing tests in tests/
 2. If a test fails, fix the code — not the test
 3. Every new feature must include tests
-4. Run .forge/scripts/test_fast.sh before committing
-5. Update docs/projects/current/features.json status to "done" when complete
+4. Run .forge/scripts/test_fast.sh before marking a feature done
+5. Do NOT run git commit — checkpoint.sh handles commits between sessions
+6. Update docs/projects/current/features.json status to "done" when complete
 6. If you discover a missing feature, append to docs/backlog.md — do NOT modify features.json scope
 {{ADDITIONAL_RULES}}
 
@@ -26,9 +27,8 @@
 2. Read output to understand current state
 3. Pick highest-priority pending feature from docs/projects/current/features.json
 4. Implement, write tests, verify pass
-5. Commit with descriptive message
-6. Update features.json
-7. Move to next feature
+5. Update features.json status to "done"
+6. Move to next feature (do NOT commit — checkpoint.sh handles it)
 
 ## Project Context
 - Current spec: docs/projects/current/spec.md

@@ -97,9 +97,10 @@ echo ""
 # --- Git commit (if tests pass and there are changes) ---
 if [ "$TEST_EXIT" -eq 0 ]; then
   if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet HEAD 2>/dev/null; then
+    COMMIT_MSG="Session $SESSION_NUM: $COMPLETED_IDS ($DONE/$TOTAL done)"
     git add -A 2>/dev/null && \
-    git commit -m "Session $SESSION_NUM checkpoint" 2>/dev/null && \
-    echo "Git: committed" || echo "Git: commit skipped (write not available)"
+    git commit -m "$COMMIT_MSG" 2>/dev/null && \
+    echo "Git: committed — $COMMIT_MSG" || echo "Git: commit skipped (write not available)"
   else
     echo "Git: nothing to commit"
   fi

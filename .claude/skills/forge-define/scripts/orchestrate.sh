@@ -97,8 +97,8 @@ Read AGENTS.md first, then follow these instructions.
 5. Write tests for the feature
 6. Run: ./.forge/scripts/test_fast.sh
 7. If tests pass, update features.json: change that feature's status to "done"
-8. Git commit with message: [FEATURE-ID] brief description (skip if git is unavailable)
-9. If time remains, pick the next available feature and repeat from step 3
+8. If time remains, pick the next available feature and repeat from step 3
+- Do NOT run git commit — the orchestrator commits between sessions via checkpoint.sh
 
 ## Current Project
 $SPEC
@@ -111,7 +111,7 @@ $FEATURES
 - Exception: you MUST update docs/projects/current/features.json and MAY append to docs/backlog.md
 - ALWAYS run ./.forge/scripts/test_fast.sh before marking a feature done
 - ALWAYS update docs/projects/current/features.json status to "done" after passing tests
-- If blocked: set status to "blocked", commit, and exit
+- If blocked: set status to "blocked" and exit
 - If you discover a new feature is needed, append one line to docs/backlog.md and continue. Do NOT add it to features.json.
 PROMPT
 }
