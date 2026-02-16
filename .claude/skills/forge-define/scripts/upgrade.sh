@@ -21,6 +21,7 @@ set -e
 # Cleanup temp files on unexpected exit
 _upgrade_cleanup() {
   [ -n "${BACKUP_TEST:-}" ] && [ -f "${BACKUP_TEST:-}" ] && rm -f "$BACKUP_TEST"
+  return 0
 }
 trap _upgrade_cleanup EXIT
 
