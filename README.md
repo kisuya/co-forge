@@ -45,7 +45,7 @@ co-forge/
 ├── .agents/skills/                    ← Codex용 (symlink → .claude/skills/)
 │
 ├── .forge/                            ← 런타임 (scaffold.sh가 생성)
-│   ├── scripts/                          init.sh, checkpoint.sh, orchestrate.sh, ...
+│   ├── scripts/                          init.sh, checkpoint.sh, orchestrate.sh, upgrade.sh, ...
 │   ├── templates/                        spec_md, features_json, ...
 │   └── projects/
 │       ├── current/                      활성 프로젝트 (gitignored)
@@ -100,6 +100,16 @@ co-forge/
 | `.forge/projects/current/` | **X** | 작업 중 상태, 개발자마다 다름 |
 | `AGENTS.md`, `docs/` | O | 제품 문서 |
 | `src/`, `tests/` | O | 제품 코드 |
+
+## 업그레이드
+
+템플릿이 업데이트되면 파생 프로젝트에서 하네스만 선택적으로 업데이트할 수 있습니다.
+
+```bash
+./.forge/scripts/upgrade.sh
+```
+
+스킬, 스크립트, 템플릿이 최신 버전으로 갱신됩니다. 프로젝트 고유 파일(AGENTS.md, docs/, src/, tests/)은 건드리지 않습니다.
 
 ## 호환성
 

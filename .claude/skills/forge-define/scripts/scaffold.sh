@@ -68,7 +68,7 @@ if [ -d ".forge/scripts" ] && [ "$(ls -A .forge/scripts/ 2>/dev/null)" ]; then
   cp -r .forge/scripts "$BACKUP"
 fi
 
-for script in init.sh checkpoint.sh new_project.sh orchestrate.sh; do
+for script in init.sh checkpoint.sh new_project.sh orchestrate.sh upgrade.sh; do
   if [ -f "$SCRIPT_DIR/$script" ]; then
     cp "$SCRIPT_DIR/$script" ".forge/scripts/$script"
   else
@@ -220,6 +220,7 @@ PASS=true
 [ -f ".forge/scripts/checkpoint.sh" ]        && echo "  ✓ .forge/scripts/checkpoint.sh"  || { echo "  ✗ .forge/scripts/checkpoint.sh"; PASS=false; }
 [ -f ".forge/scripts/orchestrate.sh" ]       && echo "  ✓ .forge/scripts/orchestrate.sh" || { echo "  ✗ .forge/scripts/orchestrate.sh"; PASS=false; }
 [ -f ".forge/scripts/test_fast.sh" ]         && echo "  ✓ .forge/scripts/test_fast.sh"   || { echo "  ✗ .forge/scripts/test_fast.sh"; PASS=false; }
+[ -f ".forge/scripts/upgrade.sh" ]           && echo "  ✓ .forge/scripts/upgrade.sh"     || { echo "  ✗ .forge/scripts/upgrade.sh"; PASS=false; }
 [ -d ".forge/templates" ]                    && echo "  ✓ .forge/templates/"              || { echo "  ✗ .forge/templates/"; PASS=false; }
 [ -f ".forge/projects/current/features.json" ] && echo "  ✓ .forge/projects/current/"    || { echo "  ✗ .forge/projects/current/"; PASS=false; }
 [ -d "tests" ]                               && echo "  ✓ tests/"                        || { echo "  ✗ tests/"; PASS=false; }
