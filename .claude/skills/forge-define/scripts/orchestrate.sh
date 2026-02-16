@@ -80,7 +80,7 @@ PROMPT
 
 run_coding_session() {
   if [ "$AGENT" = "codex" ]; then
-    codex --full-auto -q "$1"
+    codex exec --full-auto "$1"
   else
     claude -p "$1"
   fi

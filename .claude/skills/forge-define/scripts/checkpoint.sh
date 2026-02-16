@@ -66,7 +66,7 @@ else
 fi
 
 # --- Determine session number ---
-SESSION_NUM=$(grep -c "^Session:" .forge/projects/current/progress.txt 2>/dev/null || echo 0)
+SESSION_NUM=$(grep -c "^Session:" .forge/projects/current/progress.txt 2>/dev/null) || SESSION_NUM=0
 SESSION_NUM=$((SESSION_NUM + 1))
 
 # --- Recent commits ---
