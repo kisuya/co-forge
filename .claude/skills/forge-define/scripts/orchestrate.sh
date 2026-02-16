@@ -230,8 +230,14 @@ rm -f "$PID_FILE"
 echo ""
 echo "=== Orchestrator finished ==="
 echo "Sessions: $SESSION"
-echo "Features done: $(get_done)"
-echo "Features remaining: $(get_pending)"
+FINAL_DONE=$(get_done)
+FINAL_PENDING=$(get_pending)
+if [ "$FINAL_PENDING" -eq -1 ]; then
+  echo "Features: unable to read (features.json may be broken)"
+else
+  echo "Features done: $FINAL_DONE"
+  echo "Features remaining: $FINAL_PENDING"
+fi
 echo ""
 echo "Next steps (interactive):"
 echo "  1. Review:  cat docs/projects/current/progress.txt"

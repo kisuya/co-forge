@@ -22,8 +22,19 @@ if [ ! -f "docs/projects/current/features.json" ]; then
   exit 1
 fi
 
-python3 -c "import json; json.load(open('docs/projects/current/features.json'))" 2>/dev/null || {
-  echo "ERROR: docs/projects/current/features.json is not valid JSON."
+python3 -c "
+import json, sys
+with open('docs/projects/current/features.json') as f:
+    data = json.load(f)
+if 'features' not in data or not isinstance(data['features'], list):
+    print('ERROR: features.json missing \"features\" array.', file=sys.stderr)
+    sys.exit(1)
+for f in data['features']:
+    if 'id' not in f or 'status' not in f:
+        print(f'ERROR: feature missing \"id\" or \"status\" key: {f}', file=sys.stderr)
+        sys.exit(1)
+" 2>/dev/null || {
+  echo "ERROR: docs/projects/current/features.json is invalid (bad JSON or missing schema)."
   exit 1
 }
 
@@ -74,7 +85,7 @@ cat >> docs/projects/current/progress.txt << ENTRY
 
 ---
 Session: $SESSION_NUM ($(date +%Y-%m-%d))
-Features completed: $COMPLETED_IDS
+Features done (all-time): $COMPLETED_IDS
 Features remaining: $PENDING pending, $BLOCKED blocked
 Test status: $TEST_STATUS
 Recent commits:

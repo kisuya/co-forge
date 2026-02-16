@@ -4,7 +4,7 @@
 
 if [ ! -f "docs/projects/current/features.json" ]; then
   echo "No active project. Run /forge-project (Claude) or \$forge-project (Codex) first."
-  exit 0
+  return 0 2>/dev/null || exit 0
 fi
 
 echo "=== Session Start: $(date) ==="

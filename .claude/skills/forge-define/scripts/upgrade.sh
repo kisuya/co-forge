@@ -44,11 +44,7 @@ echo "Fetching template updates..."
 git fetch "$TEMPLATE_REMOTE" --quiet
 echo "  ✓ Fetched"
 
-# --- Step 3: Compare versions ---
-LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null)
-TEMPLATE_HEAD=$(git rev-parse "$TEMPLATE_REMOTE/main" 2>/dev/null)
-
-# Check if there are actual changes in harness files
+# --- Step 3: Check for changes in harness files ---
 DIFF_FILES=$(git diff --name-only HEAD "$TEMPLATE_REMOTE/main" -- \
   .claude/skills/ \
   .agents/skills/ \
