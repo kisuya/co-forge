@@ -47,4 +47,4 @@ except Exception as e:
 
 echo ""
 echo "=== Quick Test ==="
-./.forge/scripts/test_fast.sh
+./.forge/scripts/test_fast.sh || true

@@ -28,6 +28,12 @@ if [ "$AGENT" != "claude" ] && [ "$AGENT" != "codex" ]; then
   exit 1
 fi
 
+# Validate max-sessions is a positive integer
+if ! [[ "$MAX_SESSIONS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: max-sessions must be a positive integer, got '$MAX_SESSIONS'."
+  exit 1
+fi
+
 # --- Signal handling: Ctrl+C / kill from another terminal ---
 cleanup() {
   echo ""
@@ -157,6 +163,14 @@ while [ "$SESSION" -lt "$MAX_SESSIONS" ]; do
   run_coding_session "$PROMPT"
 
   CURRENT_PENDING=$(get_pending)
+
+  # --- Guard: features.json read failure mid-loop ---
+  if [ "$CURRENT_PENDING" -eq -1 ]; then
+    echo ""
+    echo "=== Error reading features.json. Stopping. ==="
+    ./.forge/scripts/checkpoint.sh || true
+    break
+  fi
 
   # --- Check completion ---
   if [ "$CURRENT_PENDING" -eq 0 ]; then

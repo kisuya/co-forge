@@ -18,6 +18,12 @@
 
 set -e
 
+# Cleanup temp files on unexpected exit
+_upgrade_cleanup() {
+  [ -n "${BACKUP_TEST:-}" ] && [ -f "${BACKUP_TEST:-}" ] && rm -f "$BACKUP_TEST"
+}
+trap _upgrade_cleanup EXIT
+
 TEMPLATE_REMOTE="template"
 TEMPLATE_URL="https://github.com/kisuya/co-forge.git"
 

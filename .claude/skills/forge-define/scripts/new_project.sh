@@ -8,6 +8,12 @@ set -e
 
 PROJECT_NAME="$1"
 
+# Sanitize: only allow alphanumeric, hyphens, underscores
+if ! [[ "$PROJECT_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "Error: Project name must only contain letters, numbers, hyphens, and underscores."
+  exit 1
+fi
+
 if [ -d "docs/projects/$PROJECT_NAME" ]; then
   echo "Error: docs/projects/$PROJECT_NAME already exists."
   exit 1
