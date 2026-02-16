@@ -17,7 +17,8 @@ Include:
 1. **Inputs/outputs** — API paths, parameters, response shape
 2. **Success behavior** — what happens when it works
 3. **Error/edge cases** — what happens when it fails
-4. **Boundary conditions** — limits, defaults, ranges
+4. **UX feedback** — what the user sees (toast, color, animation, loading state)
+5. **Boundary conditions** — limits, defaults, ranges
 
 Bad: `"name": "검색 결과 UX 개선"` (what exactly?)
 Good: `"description": "검색 입력 시 결과 하이라이트, 외부 클릭 시 자동닫힘, 중복 방지, Escape 키로 닫기"`
