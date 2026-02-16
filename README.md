@@ -7,9 +7,14 @@ AI와 함께 코드를 만드는 작업장.
 ## Quick Start
 
 ```bash
-# 1. 이 레포를 새 프로젝트의 시작점으로 사용
-git clone https://github.com/kisuya/co-forge.git my-project
+# 1. GitHub에서 "Use this template" 버튼으로 내 저장소 생성 (권장)
+#    https://github.com/kisuya/co-forge → "Use this template" → "Create a new repository"
+#    그 후 clone:
+git clone https://github.com/YOU/YOUR-PROJECT.git my-project
 cd my-project
+
+# 또는 직접 clone (⚠ scaffold 시 origin 변경 안내가 나옵니다)
+# git clone https://github.com/kisuya/co-forge.git my-project
 
 # 2. Claude Code에서 스킬 실행
 claude
