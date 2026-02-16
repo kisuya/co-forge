@@ -60,7 +60,7 @@ If a project is still in progress (features with "pending" or "in_progress"):
 
 Read:
 - `docs/prd.md` — full feature backlog (now updated from Step 0)
-- `docs/architecture.md` — current system state
+- `docs/architecture.md` — architecture decisions and tech stack
 - Previous `docs/projects/*/retrospective.md` — lessons and deferred features
 - Previous `docs/projects/*/features.json` — what's already been built
 

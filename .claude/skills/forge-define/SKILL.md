@@ -87,9 +87,17 @@ Write `docs/prd.md`. Key principles:
 
 ### Step 3: Architecture Decision
 
-Write `docs/architecture.md`:
-- System type, tech stack with rationale, directory structure
-- Data model, API design, key decisions with WHY
+Write `docs/architecture.md`. Only record **decisions and reasoning**, not implementation details:
+- Architecture pattern (monolith, modular monolith, etc.) with rationale
+- Tech stack choices with WHY (language, framework, DB engine)
+- Key design decisions and trade-offs
+
+**Do NOT pre-define** (code is the source of truth):
+- Directory structure — emerges from code as features are built
+- DB schema / data models — emerges from feature implementation
+- API endpoints / specs — emerges from feature implementation
+
+If it can't be known before coding starts, don't write it down. Wrong docs are worse than no docs.
 
 ### Step 4: Coding Conventions
 
