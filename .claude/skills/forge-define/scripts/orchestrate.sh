@@ -96,7 +96,7 @@ echo "Pending features: $PREV_PENDING"
 echo ""
 
 if [ "$PREV_PENDING" -eq 0 ]; then
-  echo "No pending features. Run /forge-project to create a new project first."
+  echo "No pending features. Run /forge-project (Claude) or \$forge-project (Codex) to create a new project first."
   exit 0
 fi
 
@@ -163,5 +163,5 @@ echo "Features remaining: $(get_pending)"
 echo ""
 echo "Next steps (interactive):"
 echo "  1. Review:  cat .forge/projects/current/progress.txt"
-echo "  2. Retro:   claude → /forge-retro"
-echo "  3. Next:    claude → /forge-project"
+echo "  2. Retro:   /forge-retro (Claude) or \$forge-retro (Codex)"
+echo "  3. Next:    /forge-project (Claude) or \$forge-project (Codex)"

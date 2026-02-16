@@ -45,12 +45,12 @@ fi
 
 # --- Prerequisites ---
 if [ ! -f "AGENTS.md" ]; then
-  echo "Error: AGENTS.md not found. Run /forge-define first."
+  echo "Error: AGENTS.md not found. Run /forge-define (Claude) or \$forge-define (Codex) first."
   exit 1
 fi
 
 if [ ! -d "docs" ]; then
-  echo "Error: docs/ not found. Run /forge-define first."
+  echo "Error: docs/ not found. Run /forge-define (Claude) or \$forge-define (Codex) first."
   exit 1
 fi
 
@@ -229,7 +229,7 @@ grep -q "\.forge/projects/current/" .gitignore 2>/dev/null && echo "  ✓ .forge
 echo ""
 if $PASS; then
   echo "=== Scaffold Complete ==="
-  echo "Run /forge-project to create your first project."
+  echo "Run /forge-project (Claude) or \$forge-project (Codex) to create your first project."
 else
   echo "=== Scaffold had issues. Review above. ==="
   exit 1

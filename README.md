@@ -16,19 +16,18 @@ cd my-project
 # 또는 직접 clone (⚠ scaffold 시 origin 변경 안내가 나옵니다)
 # git clone https://github.com/kisuya/co-forge.git my-project
 
-# 2. Claude Code에서 스킬 실행
-claude
-
-> /forge-discover    # 아이디어 검증
-> /forge-define      # PRD + 아키텍처 + 하니스 설치
-> /forge-project     # 첫 프로젝트 스코핑
+# 2. 에이전트에서 스킬 실행
+#    Claude Code              Codex
+> /forge-discover          # $forge-discover     아이디어 검증
+> /forge-define            # $forge-define       PRD + 아키텍처 + 하니스 설치
+> /forge-project           # $forge-project      첫 프로젝트 스코핑
 
 # 3. 자율 코딩 실행
-./.forge/scripts/orchestrate.sh claude
+./.forge/scripts/orchestrate.sh claude   # 또는 codex
 
 # 4. 회고 후 다음 사이클
-> /forge-retro       # 프로젝트 회고
-> /forge-project     # 다음 프로젝트
+> /forge-retro             # $forge-retro        프로젝트 회고
+> /forge-project           # $forge-project      다음 프로젝트
 ```
 
 ## 구조

@@ -18,4 +18,4 @@ echo '{"project":"","goal":"","agent":"","features":[]}' > .forge/projects/curre
 echo "No progress yet." > .forge/projects/current/progress.txt
 
 echo "Archived as .forge/projects/$PROJECT_NAME"
-echo "Run /forge-project to set up the next phase."
+echo "Run /forge-project (Claude) or \$forge-project (Codex) to set up the next phase."
