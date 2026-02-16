@@ -99,7 +99,18 @@ Read templates from `.forge/templates/` and fill in:
 - `{{PROJECT_ID}}`, `{{PROJECT_NAME}}`, `{{DATE}}`
 - `{{FEATURE_COUNT}}`, `{{PREVIOUS_RETRO_PATH}}`
 
-### Step 4: Verify
+### Step 4: Git Commit
+
+Commit backlog and PRD changes from Step 0 (docs/projects/current/ is gitignored):
+
+```bash
+git add docs/prd.md docs/backlog.md
+git commit -m "Project [name]: update PRD and process backlog"
+```
+
+Skip if neither file was modified (empty backlog, no new ideas).
+
+### Step 5: Verify
 
 1. `docs/projects/current/features.json` is valid JSON
 2. No circular dependencies

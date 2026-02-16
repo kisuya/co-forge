@@ -17,7 +17,7 @@ WRONG:
   [agent skill] → contains orchestration loop     ← role confusion
 ```
 
-## The Forge Suite (4 Skills + 6 Scripts)
+## The Forge Suite (4 Skills + 7 Scripts)
 
 ### AI Skills — judgment required
 
@@ -44,6 +44,7 @@ Runtime scripts live in `.forge/scripts/` (git tracked). `scaffold.sh` runs from
 | checkpoint.sh | Sprint checkpoint (tests, progress update) | orchestrate.sh after each session, or user manually |
 | new_project.sh | Archive current project, clean slate | forge-retro at the end |
 | orchestrate.sh | Autonomous coding loop | User's terminal |
+| test_fast.sh | Quick test runner (generated per tech stack) | Coding agent, checkpoint.sh |
 | upgrade.sh | Pull latest harness from template repo | User manually |
 
 ### Repo Structure After Scaffold

@@ -8,7 +8,7 @@
       "name": "[Feature name]",
       "status": "pending",
       "priority": 1,
-      "test_file": "tests/[path]/test_[name].py",
+      "test_file": "tests/[path]/test_[name].[ext]",
       "depends_on": []
     }
   ]

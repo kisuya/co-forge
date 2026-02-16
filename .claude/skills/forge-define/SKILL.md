@@ -155,7 +155,8 @@ The script automatically:
 
 ### Step 8: Git Commit
 
-After scaffold and verification, create an initial commit to capture the harness setup:
+If scaffold.sh already created an initial commit (new git repo), verify all files are tracked.
+Otherwise, commit:
 
 ```bash
 git add -A
