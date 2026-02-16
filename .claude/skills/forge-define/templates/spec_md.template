@@ -1,0 +1,18 @@
+# Project {{PROJECT_NUMBER}}: {{PROJECT_NAME}}
+
+## Goal
+{{GOAL}}
+
+## Context
+{{CONTEXT}}
+
+## Scope
+{{SCOPE}}
+
+## Out of Scope
+{{OUT_OF_SCOPE}}
+
+## Definition of Done
+- All features in features.json are "done"
+- All tests pass (including all previous tests)
+- No regressions

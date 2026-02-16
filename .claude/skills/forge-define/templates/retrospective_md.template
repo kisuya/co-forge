@@ -1,0 +1,25 @@
+# Retrospective: {{PROJECT_NAME}}
+
+## Summary
+{{START_DATE}} → {{END_DATE}} | {{SESSION_COUNT}} sessions | {{FEATURES_COMPLETED}} features completed
+
+## Goal
+{{GOAL}}
+
+## What Was Built
+{{COMPLETED_FEATURES}}
+
+## What Wasn't Built (and Why)
+{{DEFERRED_FEATURES}}
+
+## What Went Well
+- {{WENT_WELL}}
+
+## What Could Be Improved
+- {{COULD_IMPROVE}}
+
+## Harness Improvements
+- {{HARNESS_CHANGES}}
+
+## Lessons for Next Project
+- {{LESSONS}}

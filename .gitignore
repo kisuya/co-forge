@@ -1,0 +1,12 @@
+# Forge: active project state (ephemeral, per-developer)
+.forge/projects/current/
+
+# Common ignores
+node_modules/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+target/
+dist/
+build/

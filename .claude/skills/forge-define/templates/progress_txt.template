@@ -1,0 +1,9 @@
+Project: {{PROJECT_ID}} - {{PROJECT_NAME}}
+Started: {{DATE}}
+Status: Not started
+Agent: (to be assigned)
+
+Features: {{FEATURE_COUNT}} pending
+Previous: {{PREVIOUS_RETRO_PATH}}
+
+No progress yet. Run init.sh to begin.

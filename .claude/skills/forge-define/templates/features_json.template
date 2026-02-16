@@ -1,0 +1,23 @@
+{
+  "project": "{{PROJECT_ID}}",
+  "goal": "{{GOAL}}",
+  "agent": "",
+  "features": [
+    {
+      "id": "[domain]-[NNN]",
+      "name": "[Feature name]",
+      "status": "pending",
+      "priority": 1,
+      "test_file": "tests/[path]/test_[name].py",
+      "depends_on": []
+    }
+  ]
+}
+
+// Feature decomposition rules:
+// - Each feature: 30 min - 2 hours of work
+// - Unique ID: [domain]-NNN (continue numbering from previous projects)
+// - Maps to 1-2 acceptance criteria from PRD
+// - test_file: specific path, even if test doesn't exist yet
+// - depends_on: feature IDs that must be "done" first
+// - priority: 1 = highest. No ties — strict ordering.
