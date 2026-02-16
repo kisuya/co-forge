@@ -35,13 +35,15 @@ claude
 
 ```
 co-forge/
-├── .claude/skills/                    ← 프로젝트 레벨 스킬 (클론하면 바로 활성화)
+├── .claude/skills/                    ← 스킬 원본 (Claude Code용, 클론하면 바로 활성화)
 │   ├── forge-discover/                   아이디어 검증 + 시장 조사
 │   ├── forge-define/                     PRD + 아키텍처 + 하니스 설치
 │   │   ├── scripts/                      scaffold.sh 외 5개 (런타임 스크립트 원본)
 │   │   └── templates/                    5개 (프로젝트 템플릿 원본)
 │   ├── forge-project/                    프로젝트 스코핑 + 백로그 정리
 │   └── forge-retro/                      프로젝트 회고
+│
+├── .agents/skills/                    ← Codex용 (symlink → .claude/skills/)
 │
 ├── .forge/                            ← 런타임 (scaffold.sh가 생성)
 │   ├── scripts/                          init.sh, checkpoint.sh, orchestrate.sh, ...
@@ -92,7 +94,8 @@ co-forge/
 
 | 경로 | 추적 | 이유 |
 |------|:----:|------|
-| `.claude/skills/` | O | 스킬은 프로젝트의 일부 |
+| `.claude/skills/` | O | 스킬 원본 |
+| `.agents/skills/` | O | Codex용 symlink → `.claude/skills/` |
 | `.forge/scripts/`, `.forge/templates/` | O | 팀이 동일한 인프라 공유 |
 | `.forge/projects/{archived}/` | O | 프로젝트 이력 보존 |
 | `.forge/projects/current/` | **X** | 작업 중 상태, 개발자마다 다름 |
@@ -101,8 +104,8 @@ co-forge/
 
 ## 호환성
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`.claude/skills/`)
-- [Codex](https://openai.com/index/openai-codex/) (`.codex/skills/`로 복사 시)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — `.claude/skills/` (원본)
+- [Codex](https://openai.com/index/openai-codex/) — `.agents/skills/` (symlink, clone 즉시 활성화)
 
 ## License
 
