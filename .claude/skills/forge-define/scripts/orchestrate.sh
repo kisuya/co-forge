@@ -97,7 +97,7 @@ Read AGENTS.md first, then follow these instructions.
 5. Write tests for the feature
 6. Run: ./.forge/scripts/test_fast.sh
 7. If tests pass, update features.json: change that feature's status to "done"
-8. Git commit: [FEATURE-ID] brief description
+8. Git commit with message: [FEATURE-ID] brief description (skip if git is unavailable)
 9. If time remains, pick the next available feature and repeat from step 3
 
 ## Current Project

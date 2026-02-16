@@ -93,6 +93,19 @@ $(git log --oneline -5 2>/dev/null || echo "  none")
 ENTRY
 
 echo ""
+
+# --- Git commit (if tests pass and there are changes) ---
+if [ "$TEST_EXIT" -eq 0 ]; then
+  if ! git diff --quiet HEAD 2>/dev/null || ! git diff --cached --quiet HEAD 2>/dev/null; then
+    git add -A 2>/dev/null && \
+    git commit -m "Session $SESSION_NUM checkpoint" 2>/dev/null && \
+    echo "Git: committed" || echo "Git: commit skipped (write not available)"
+  else
+    echo "Git: nothing to commit"
+  fi
+fi
+
+echo ""
 echo "=== Checkpoint Complete ==="
 echo "Session: $SESSION_NUM"
 echo "Done: $DONE / $TOTAL"
