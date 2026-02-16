@@ -17,6 +17,7 @@ Turn a validated idea into a concrete PRD, architecture plan, and working agent 
 
 **Produces:**
 - `docs/prd.md`, `docs/architecture.md`, `docs/conventions.md`, `docs/tech_stack.md`, `docs/backlog.md`
+- `README.md` — product entry point
 - `AGENTS.md` — agent instructions
 - Harness: `.forge/scripts/`, `.forge/templates/`, `docs/projects/`, `tests/`
 
@@ -103,7 +104,7 @@ If it can't be known before coding starts, don't write it down. Wrong docs are w
 
 Write `docs/conventions.md`:
 - Language & style, naming, file organization (max length)
-- Error handling, testing (framework, naming, coverage), git commit format
+- Error handling, testing (framework, naming, coverage)
 
 ### Step 5: Tech Stack Reference
 
@@ -156,7 +157,7 @@ The script automatically:
 1. Creates `.forge/` directory structure (scripts/, templates/) and `docs/projects/current/`
 2. Installs runtime scripts (init.sh, checkpoint.sh, new_project.sh, orchestrate.sh, upgrade.sh)
 3. Generates test_fast.sh based on detected tech stack
-4. Installs all templates for forge-project and forge-retro
+4. Installs all templates (used by forge-define, forge-project, and forge-retro)
 5. Creates project placeholders and smoke test
 6. Creates `docs/backlog.md` for feature discovery tracking
 7. Adds `docs/projects/current/` to .gitignore (active state is per-developer)

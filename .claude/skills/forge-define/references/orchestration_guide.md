@@ -162,6 +162,8 @@ Sprint checkpoints and project retrospectives are fundamentally different:
 5. **Stuck detection**: If pending count doesn't decrease, stop. The agent is stuck.
 6. **Max session limit**: Always cap iterations. Default 20.
 7. **Agent-agnostic**: Support both claude and codex via parameter.
+   - Claude: `--dangerously-skip-permissions` (autonomous, no human approval)
+   - Codex: `--sandbox danger-full-access` (full filesystem including .git)
 8. **Clear exit message**: Tell the user to run /forge-retro (or $forge-retro) next.
 
 ## What Goes WHERE

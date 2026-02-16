@@ -39,8 +39,7 @@ for f in data['features']:
     if f['description'].strip() == f.get('name', '').strip():
         print(f'ERROR: feature \"{f[\"id\"]}\" description is identical to name.', file=sys.stderr)
         sys.exit(1)
-" 2>/dev/null || {
-  echo "ERROR: docs/projects/current/features.json is invalid (bad JSON or missing schema)."
+" 2>&1 || {
   exit 1
 }
 

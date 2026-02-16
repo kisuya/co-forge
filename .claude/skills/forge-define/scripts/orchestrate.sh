@@ -83,11 +83,11 @@ print(sum(1 for f in data['features'] if f['status'] == 'done'))
 
 build_prompt() {
   # Embed full context so the agent can work autonomously
-  local SPEC=$(head -20 docs/projects/current/spec.md 2>/dev/null)
+  local SPEC=$(cat docs/projects/current/spec.md 2>/dev/null)
   local FEATURES=$(cat docs/projects/current/features.json 2>/dev/null)
 
   cat << PROMPT
-Read AGENTS.md first, then follow these instructions.
+Read AGENTS.md for project context and rules. For this autonomous session, follow the protocol below (overrides AGENTS.md Session Start Protocol).
 
 ## Session Protocol
 1. Run: source .forge/scripts/init.sh

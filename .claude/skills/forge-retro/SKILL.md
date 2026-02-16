@@ -20,6 +20,7 @@ Project retrospective. AI analyzes data and facilitates discussion; templates de
 **Produces:**
 - `docs/projects/{name}/retrospective.md` (from `.forge/templates/retrospective_md.template`)
 - Updated `docs/architecture.md`
+- Updated `README.md` (if needed)
 - Updated `AGENTS.md` (if needed)
 
 ## Reference Files

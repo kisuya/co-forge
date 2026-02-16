@@ -3,6 +3,9 @@
 ## Project Overview
 {{PROJECT_OVERVIEW}}
 
+## Product Requirements
+→ docs/prd.md
+
 ## Architecture
 → docs/architecture.md
 
@@ -19,7 +22,7 @@
 4. Run .forge/scripts/test_fast.sh before marking a feature done
 5. Do NOT run git commit — checkpoint.sh handles commits between sessions
 6. Update docs/projects/current/features.json status to "done" when complete
-6. If you discover a missing feature, append to docs/backlog.md — do NOT modify features.json scope
+7. If you discover a missing feature, append to docs/backlog.md — do NOT modify features.json scope
 {{ADDITIONAL_RULES}}
 
 ## Session Start Protocol

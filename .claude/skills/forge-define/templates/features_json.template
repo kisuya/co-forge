@@ -6,7 +6,7 @@
     {
       "id": "[domain]-[NNN]",
       "name": "[Feature name]",
-      "description": "[Mini-spec: what to build, inputs/outputs, edge cases]",
+      "description": "[Mini-spec: 1)inputs/outputs 2)success behavior 3)error/edge cases 4)UX feedback 5)boundary conditions]",
       "status": "pending",
       "priority": 1,
       "test_file": "tests/[path]/test_[name].[ext]",
