@@ -156,6 +156,6 @@ After scaffold completes:
 
 ### Handoff
 
-> 하니스가 준비되었습니다. `/forge-project` 로 첫 번째 프로젝트를 생성하세요.
+> 하니스가 준비되었습니다. `/forge-project` (Claude) 또는 `$forge-project` (Codex) 로 첫 번째 프로젝트를 생성하세요.
 >
 > 자율 코딩 실행 모델은 `references/orchestration_guide.md` 를 참고하세요.

@@ -103,4 +103,4 @@ Be honest. A clear No-Go saves weeks.
 
 ### Handoff
 
-> 다음 단계: `/forge-define` 으로 PRD와 아키텍처를 정의합니다.
+> 다음 단계: `/forge-define` (Claude) 또는 `$forge-define` (Codex) 으로 PRD와 아키텍처를 정의합니다.

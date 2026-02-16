@@ -27,11 +27,11 @@ Scope the next project phase. AI decides WHAT to build; templates define the out
 **Retrospective check** (skip for the very first project):
 If previous projects exist in `.forge/projects/`, check the most recent one.
 If it has NO `retrospective.md`:
-- Interactive: "이전 프로젝트의 회고가 아직 안 됐습니다. 먼저 `/forge-retro` 를 실행하세요."
+- Interactive: "이전 프로젝트의 회고가 아직 안 됐습니다. 먼저 `/forge-retro` (Claude) 또는 `$forge-retro` (Codex) 를 실행하세요."
 - Headless: Warn and abort.
 
 If a project is still in progress (features with "pending" or "in_progress"):
-- Interactive: Ask if the user wants to run `/forge-retro` first
+- Interactive: Ask if the user wants to run `/forge-retro` (Claude) or `$forge-retro` (Codex) first
 - Headless: Warn and abort.
 
 ## Reference Files

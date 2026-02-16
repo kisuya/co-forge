@@ -117,5 +117,5 @@ Sessions: [count]
 Features completed: [N], deferred: [M]
 Key improvements: [1-2 line summary]
 
-Next: /forge-project
+Next: /forge-project (Claude) or $forge-project (Codex)
 ```
