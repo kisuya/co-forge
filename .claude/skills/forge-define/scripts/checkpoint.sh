@@ -3,10 +3,11 @@
 # Replaces the forge-iterate AI skill with a free bash script.
 #
 # What it does:
-#   1. Runs full test suite
+#   1. Runs tests via test_fast.sh
 #   2. Counts done/pending features
 #   3. Appends a session entry to progress.txt
-#   4. Updates dependency blocking status
+#
+# Exit code: 0 if tests pass, 1 if tests fail or features.json is invalid.
 #
 # Usage: ./.forge/scripts/checkpoint.sh
 #   Called by orchestrate.sh, or manually by the user.
@@ -68,9 +69,6 @@ fi
 SESSION_NUM=$(grep -c "^Session:" docs/projects/current/progress.txt 2>/dev/null) || SESSION_NUM=0
 SESSION_NUM=$((SESSION_NUM + 1))
 
-# --- Recent commits ---
-RECENT_COMMITS=$(git log --oneline -3 2>/dev/null | head -3 || echo "  (no commits)")
-
 # --- Append to progress.txt ---
 cat >> docs/projects/current/progress.txt << ENTRY
 
@@ -89,4 +87,9 @@ echo "Session: $SESSION_NUM"
 echo "Done: $DONE / $TOTAL"
 echo "Remaining: $PENDING pending, $BLOCKED blocked"
 echo "Tests: $TEST_STATUS"
+
+# Exit non-zero if tests failed so orchestrate.sh can detect it
+if [ "$TEST_EXIT" -ne 0 ]; then
+  exit 1
+fi
 

@@ -107,7 +107,8 @@ $SPEC
 $FEATURES
 
 ## Critical Rules
-- NEVER modify existing tests or docs/ files
+- NEVER modify existing tests or source docs (docs/prd.md, docs/architecture.md, etc.)
+- Exception: you MUST update docs/projects/current/features.json and MAY append to docs/backlog.md
 - ALWAYS run ./.forge/scripts/test_fast.sh before marking a feature done
 - ALWAYS update docs/projects/current/features.json status to "done" after passing tests
 - If blocked: set status to "blocked", commit, and exit
@@ -117,6 +118,7 @@ PROMPT
 
 run_coding_session() {
   # Run agent in background + wait so that trap can fire on Ctrl+C.
+  local exit_code=0
   if [ "$AGENT" = "codex" ]; then
     codex exec --full-auto "$1" &
   else
@@ -125,8 +127,9 @@ run_coding_session() {
     claude -p --dangerously-skip-permissions "$1" &
   fi
   CHILD_PID=$!
-  wait "$CHILD_PID"
+  wait "$CHILD_PID" && exit_code=0 || exit_code=$?
   CHILD_PID=""
+  return $exit_code
 }
 
 PREV_PENDING=$(get_pending)
@@ -161,6 +164,14 @@ while [ "$SESSION" -lt "$MAX_SESSIONS" ]; do
   # --- AI coding session (with full context) ---
   PROMPT=$(build_prompt)
   run_coding_session "$PROMPT"
+  SESSION_EXIT=$?
+  if [ "$SESSION_EXIT" -ne 0 ]; then
+    echo ""
+    echo "=== Agent session failed (exit code: $SESSION_EXIT) ==="
+    echo "The agent process crashed or was not found. Stopping."
+    ./.forge/scripts/checkpoint.sh || true
+    break
+  fi
 
   CURRENT_PENDING=$(get_pending)
 

@@ -14,6 +14,17 @@ SKILL_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "=== Forge Scaffold ==="
 
+# --- Prerequisites (check before any destructive actions) ---
+if [ ! -f "AGENTS.md" ]; then
+  echo "Error: AGENTS.md not found. Run /forge-define (Claude) or \$forge-define (Codex) first."
+  exit 1
+fi
+
+if [ ! -d "docs" ]; then
+  echo "Error: docs/ not found. Run /forge-define (Claude) or \$forge-define (Codex) first."
+  exit 1
+fi
+
 # --- Step 0: Guard against pushing to template repo ---
 ORIGIN_URL=$(git remote get-url origin 2>/dev/null || echo "")
 
@@ -41,17 +52,6 @@ if echo "$ORIGIN_URL" | grep -qE 'kisuya/co-forge(\.git)?$'; then
     echo "     git remote set-url origin https://github.com/YOU/YOUR-PROJECT.git"
   fi
   echo ""
-fi
-
-# --- Prerequisites ---
-if [ ! -f "AGENTS.md" ]; then
-  echo "Error: AGENTS.md not found. Run /forge-define (Claude) or \$forge-define (Codex) first."
-  exit 1
-fi
-
-if [ ! -d "docs" ]; then
-  echo "Error: docs/ not found. Run /forge-define (Claude) or \$forge-define (Codex) first."
-  exit 1
 fi
 
 # --- Step 1: Create .forge/ structure ---
