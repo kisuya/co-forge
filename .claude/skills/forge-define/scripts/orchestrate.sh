@@ -120,7 +120,7 @@ run_coding_session() {
   # Run agent in background + wait so that trap can fire on Ctrl+C.
   local exit_code=0
   if [ "$AGENT" = "codex" ]; then
-    codex exec --full-auto "$1" &
+    codex exec --sandbox danger-full-access "$1" &
   else
     # --dangerously-skip-permissions: autonomous mode requires no human approval.
     # The human gate is at forge-project and forge-retro, not during coding.
