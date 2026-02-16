@@ -82,9 +82,12 @@ Write this WITH the user — incorporate their exact words where possible.
 
 ### Step 6: Update Architecture ← AI judgment
 
-Update `docs/architecture.md`:
-- New modules, endpoints, schemas added during this project
-- Read actual codebase to verify, not just git log
+Update `docs/architecture.md` with **decisions and reasoning only** (code is the source of truth for implementation details):
+- New architectural decisions made during this project (e.g., "chose WebSocket over polling because...")
+- Tech stack changes or additions with rationale
+- Design trade-offs discovered during implementation
+
+Do NOT duplicate implementation details that live in code (directory structure, DB schema, API endpoints).
 
 Check `docs/conventions.md` for new patterns to formalize.
 
@@ -107,6 +110,17 @@ Ask: "AGENTS.md에 추가하거나 바꿀 규칙이 있나요?"
 4. `docs/projects/current/` — clean slate
 5. Full test suite passes
 6. `docs/backlog.md` — processed (no stale items from this project)
+
+### Step 9: Git Commit
+
+Commit all retrospective changes:
+
+```bash
+git add -A
+git commit -m "Retrospective: [project-name]"
+```
+
+This captures: retrospective.md, updated architecture.md, updated AGENTS.md, processed backlog.md.
 
 ### Handoff
 
