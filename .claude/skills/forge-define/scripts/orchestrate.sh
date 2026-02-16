@@ -19,12 +19,30 @@ AGENT="${1:-claude}"
 MAX_SESSIONS="${2:-20}"
 SESSION=0
 STALL_COUNT=0
+CHILD_PID=""
+PID_FILE=".forge/orchestrate.pid"
 
 # Validate agent
 if [ "$AGENT" != "claude" ] && [ "$AGENT" != "codex" ]; then
   echo "Error: Unknown agent '$AGENT'. Use 'claude' or 'codex'."
   exit 1
 fi
+
+# --- Signal handling: Ctrl+C / kill from another terminal ---
+cleanup() {
+  echo ""
+  echo "=== Orchestrator interrupted ==="
+  if [ -n "$CHILD_PID" ]; then
+    # Kill the child process tree
+    kill -TERM "$CHILD_PID" 2>/dev/null
+    wait "$CHILD_PID" 2>/dev/null
+  fi
+  rm -f "$PID_FILE"
+  exit 130
+}
+trap cleanup SIGINT SIGTERM
+
+echo $$ > "$PID_FILE"
 
 get_pending() {
   python3 -c "
@@ -79,13 +97,17 @@ PROMPT
 }
 
 run_coding_session() {
+  # Run agent in background + wait so that trap can fire on Ctrl+C.
   if [ "$AGENT" = "codex" ]; then
-    codex exec --full-auto "$1"
+    codex exec --full-auto "$1" &
   else
     # --dangerously-skip-permissions: autonomous mode requires no human approval.
     # The human gate is at /forge-project and /forge-retro, not during coding.
-    claude -p --dangerously-skip-permissions "$1"
+    claude -p --dangerously-skip-permissions "$1" &
   fi
+  CHILD_PID=$!
+  wait "$CHILD_PID"
+  CHILD_PID=""
 }
 
 PREV_PENDING=$(get_pending)
@@ -156,6 +178,8 @@ while [ "$SESSION" -lt "$MAX_SESSIONS" ]; do
 
   PREV_PENDING=$CURRENT_PENDING
 done
+
+rm -f "$PID_FILE"
 
 echo ""
 echo "=== Orchestrator finished ==="
