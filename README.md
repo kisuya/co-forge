@@ -25,6 +25,10 @@ cd my-project
 # 3. 자율 코딩 실행
 ./.forge/scripts/orchestrate.sh claude   # 또는 codex
 
+# 3-1. 중지하려면
+#   같은 터미널:  Ctrl+C
+#   다른 터미널:  kill $(cat .forge/orchestrate.pid)
+
 # 4. 회고 후 다음 사이클
 > /forge-retro             # $forge-retro        프로젝트 회고
 > /forge-project           # $forge-project      다음 프로젝트
