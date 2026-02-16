@@ -91,6 +91,8 @@ Do NOT duplicate implementation details that live in code (directory structure, 
 
 Check `docs/conventions.md` for new patterns to formalize.
 
+Review `README.md` — if it doesn't accurately reflect the current product (still template default, outdated setup steps, missing commands), update it.
+
 ### Step 7: Review AGENTS.md ← AI judgment (most impactful)
 
 Changes here affect every future agent session.
