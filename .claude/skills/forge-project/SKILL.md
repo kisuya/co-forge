@@ -92,6 +92,7 @@ Read templates from `.forge/templates/` and fill in:
 **features.json** — read `.forge/templates/features_json.template`, generate feature list:
 - Each feature: 30 min - 2 hours of work
 - Unique ID: `[domain]-NNN`
+- `description`: agent-ready mini-spec (inputs/outputs, success/error behavior, edge cases)
 - Strict priority ordering, no ties
 - Explicit dependency declarations
 

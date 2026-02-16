@@ -6,6 +6,7 @@
     {
       "id": "[domain]-[NNN]",
       "name": "[Feature name]",
+      "description": "[Mini-spec: what to build, inputs/outputs, edge cases]",
       "status": "pending",
       "priority": 1,
       "test_file": "tests/[path]/test_[name].[ext]",
@@ -18,6 +19,8 @@
 // - Each feature: 30 min - 2 hours of work
 // - Unique ID: [domain]-NNN (continue numbering from previous projects)
 // - Maps to 1-2 acceptance criteria from PRD
+// - description: agent-ready mini-spec (no guessing needed)
+//     Include: inputs/outputs, success behavior, error handling, boundary conditions
 // - test_file: specific path, even if test doesn't exist yet
 // - depends_on: feature IDs that must be "done" first
 // - priority: 1 = highest. No ties — strict ordering.

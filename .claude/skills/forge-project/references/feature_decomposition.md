@@ -7,6 +7,22 @@ A well-sized feature for autonomous agent execution:
 - Touches 1-3 files (not counting tests)
 - Has clear, testable acceptance criteria
 - Can be committed independently without breaking the build
+- Has a `description` that lets an agent implement without reading the full PRD
+
+## Writing Good Descriptions
+
+The `description` field is a mini-spec — the agent's only context for implementation.
+
+Include:
+1. **Inputs/outputs** — API paths, parameters, response shape
+2. **Success behavior** — what happens when it works
+3. **Error/edge cases** — what happens when it fails
+4. **Boundary conditions** — limits, defaults, ranges
+
+Bad: `"name": "검색 결과 UX 개선"` (what exactly?)
+Good: `"description": "검색 입력 시 결과 하이라이트, 외부 클릭 시 자동닫힘, 중복 방지, Escape 키로 닫기"`
+
+Rule of thumb: if the agent would need to ask a clarifying question, the description is too vague.
 
 ## Too Large (Split It)
 
