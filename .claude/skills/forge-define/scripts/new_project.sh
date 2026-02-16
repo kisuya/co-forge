@@ -6,16 +6,16 @@
 
 PROJECT_NAME="$1"
 
-if [ -d ".forge/projects/$PROJECT_NAME" ]; then
-  echo "Error: .forge/projects/$PROJECT_NAME already exists."
+if [ -d "docs/projects/$PROJECT_NAME" ]; then
+  echo "Error: docs/projects/$PROJECT_NAME already exists."
   exit 1
 fi
 
-mv .forge/projects/current ".forge/projects/$PROJECT_NAME"
-mkdir -p .forge/projects/current
-echo "# New Project" > .forge/projects/current/spec.md
-echo '{"project":"","goal":"","agent":"","features":[]}' > .forge/projects/current/features.json
-echo "No progress yet." > .forge/projects/current/progress.txt
+mv docs/projects/current "docs/projects/$PROJECT_NAME"
+mkdir -p docs/projects/current
+echo "# New Project" > docs/projects/current/spec.md
+echo '{"project":"","goal":"","agent":"","features":[]}' > docs/projects/current/features.json
+echo "No progress yet." > docs/projects/current/progress.txt
 
-echo "Archived as .forge/projects/$PROJECT_NAME"
+echo "Archived as docs/projects/$PROJECT_NAME"
 echo "Run /forge-project (Claude) or \$forge-project (Codex) to set up the next phase."

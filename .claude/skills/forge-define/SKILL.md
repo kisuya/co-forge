@@ -18,7 +18,7 @@ Turn a validated idea into a concrete PRD, architecture plan, and working agent 
 **Produces:**
 - `docs/prd.md`, `docs/architecture.md`, `docs/conventions.md`, `docs/tech_stack.md`, `docs/backlog.md`
 - `AGENTS.md` — agent instructions
-- Harness: `.forge/scripts/`, `.forge/templates/`, `.forge/projects/`, `tests/`
+- Harness: `.forge/scripts/`, `.forge/templates/`, `docs/projects/`, `tests/`
 
 ## Input Context
 
@@ -117,12 +117,12 @@ Read `references/agents_md_guide.md`. Write `AGENTS.md` in repo root:
 - **Absolute Rules** (5-7 items): Only rules agents commonly violate
   - Never modify tests
   - Run .forge/scripts/test_fast.sh before every commit
-  - Update .forge/projects/current/features.json when completing a feature
+  - Update docs/projects/current/features.json when completing a feature
   - Append to docs/backlog.md if new features discovered (never modify features.json scope)
   - Files must not exceed 300 lines
   - (add tech-stack-specific rules from docs/conventions.md)
 - **Session Start Protocol**: `source .forge/scripts/init.sh`
-- **Project Context**: points to .forge/projects/current/
+- **Project Context**: points to docs/projects/current/
 
 Keep under 50 lines. Every word costs context window.
 
@@ -135,24 +135,31 @@ bash [this skill's scripts/scaffold.sh]
 ```
 
 The script automatically:
-1. Creates `.forge/` directory structure (scripts/, templates/, projects/current/)
-2. Installs runtime scripts (init.sh, checkpoint.sh, new_project.sh, orchestrate.sh)
+1. Creates `.forge/` directory structure (scripts/, templates/) and `docs/projects/current/`
+2. Installs runtime scripts (init.sh, checkpoint.sh, new_project.sh, orchestrate.sh, upgrade.sh)
 3. Generates test_fast.sh based on detected tech stack
 4. Installs all templates for forge-project and forge-retro
 5. Creates project placeholders and smoke test
 6. Creates `docs/backlog.md` for feature discovery tracking
-7. Adds `.forge/projects/current/` to .gitignore (active state is per-developer)
-8. Initializes git if needed
-9. Verifies the full structure
+7. Initializes git if needed
+8. Verifies the full structure
 
-### Step 8: Final Verify
+### Step 8: Git Commit
+
+After scaffold and verification, create an initial commit to capture the harness setup:
+
+```bash
+git add -A
+git commit -m "Initial harness setup (forge-define)"
+```
+
+### Step 9: Final Verify
 
 After scaffold completes:
 1. `.forge/scripts/init.sh` runs without errors
 2. `.forge/scripts/test_fast.sh` passes smoke test
-3. All docs/ files exist (including backlog.md)
+3. All docs/ files exist (including backlog.md, projects/current/)
 4. AGENTS.md exists and is under 50 lines
-5. `.forge/projects/current/` is in .gitignore
 
 ### Handoff
 

@@ -1,6 +1,3 @@
-# Forge: active project state (ephemeral, per-developer)
-.forge/projects/current/
-
 # Common ignores
 node_modules/
 __pycache__/

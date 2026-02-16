@@ -6,7 +6,7 @@ echo "=== Session Start: $(date) ==="
 
 echo ""
 echo "=== Project Goal ==="
-head -5 .forge/projects/current/spec.md
+head -5 docs/projects/current/spec.md
 
 echo ""
 echo "=== Recent Commits ==="
@@ -14,14 +14,14 @@ git log --oneline -5 2>/dev/null || echo "  (no commits yet)"
 
 echo ""
 echo "=== Progress ==="
-cat .forge/projects/current/progress.txt
+cat docs/projects/current/progress.txt
 
 echo ""
 echo "=== Pending Features ==="
 python3 -c "
 import json, sys
 try:
-    with open('.forge/projects/current/features.json') as f:
+    with open('docs/projects/current/features.json') as f:
         data = json.load(f)
     for feat in data['features']:
         if feat['status'] != 'done':

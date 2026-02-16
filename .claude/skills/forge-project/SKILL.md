@@ -15,9 +15,9 @@ disable-model-invocation: true
 Scope the next project phase. AI decides WHAT to build; templates define the output format.
 
 **Produces:**
-- `.forge/projects/current/spec.md` (from `.forge/templates/spec_md.template`)
-- `.forge/projects/current/features.json` (from `.forge/templates/features_json.template`)
-- `.forge/projects/current/progress.txt` (from `.forge/templates/progress_txt.template`)
+- `docs/projects/current/spec.md` (from `.forge/templates/spec_md.template`)
+- `docs/projects/current/features.json` (from `.forge/templates/features_json.template`)
+- `docs/projects/current/progress.txt` (from `.forge/templates/progress_txt.template`)
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ Scope the next project phase. AI decides WHAT to build; templates define the out
 - `docs/prd.md` must exist
 
 **Retrospective check** (skip for the very first project):
-If previous projects exist in `.forge/projects/`, check the most recent one.
+If previous projects exist in `docs/projects/`, check the most recent one.
 If it has NO `retrospective.md`:
 - Interactive: "이전 프로젝트의 회고가 아직 안 됐습니다. 먼저 `/forge-retro` (Claude) 또는 `$forge-retro` (Codex) 를 실행하세요."
 - Headless: Warn and abort.
@@ -61,10 +61,10 @@ If a project is still in progress (features with "pending" or "in_progress"):
 Read:
 - `docs/prd.md` — full feature backlog (now updated from Step 0)
 - `docs/architecture.md` — current system state
-- Previous `.forge/projects/*/retrospective.md` — lessons and deferred features
-- Previous `.forge/projects/*/features.json` — what's already been built
+- Previous `docs/projects/*/retrospective.md` — lessons and deferred features
+- Previous `docs/projects/*/features.json` — what's already been built
 
-Scan `.forge/projects/` for completed phases. Cross-reference with `docs/prd.md`:
+Scan `docs/projects/` for completed phases. Cross-reference with `docs/prd.md`:
 - Which features are done?
 - Which were deferred in retrospectives?
 - What remains?
@@ -101,7 +101,7 @@ Read templates from `.forge/templates/` and fill in:
 
 ### Step 4: Verify
 
-1. `.forge/projects/current/features.json` is valid JSON
+1. `docs/projects/current/features.json` is valid JSON
 2. No circular dependencies
 3. Feature IDs don't duplicate previous projects
 4. Run `.forge/scripts/init.sh` — confirm it shows the new project correctly

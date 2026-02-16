@@ -16,20 +16,20 @@ set -e
 echo "=== Sprint Checkpoint: $(date) ==="
 
 # --- Validate features.json ---
-if [ ! -f ".forge/projects/current/features.json" ]; then
-  echo "ERROR: .forge/projects/current/features.json not found."
+if [ ! -f "docs/projects/current/features.json" ]; then
+  echo "ERROR: docs/projects/current/features.json not found."
   exit 1
 fi
 
-python3 -c "import json; json.load(open('.forge/projects/current/features.json'))" 2>/dev/null || {
-  echo "ERROR: .forge/projects/current/features.json is not valid JSON."
+python3 -c "import json; json.load(open('docs/projects/current/features.json'))" 2>/dev/null || {
+  echo "ERROR: docs/projects/current/features.json is not valid JSON."
   exit 1
 }
 
 # --- Count features ---
 read DONE PENDING BLOCKED TOTAL <<< $(python3 -c "
 import json
-with open('.forge/projects/current/features.json') as f:
+with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 features = data['features']
 done = sum(1 for f in features if f['status'] == 'done')
@@ -44,7 +44,7 @@ echo "Features: $DONE done / $TOTAL total ($PENDING pending, $BLOCKED blocked)"
 # --- Completed feature IDs ---
 COMPLETED_IDS=$(python3 -c "
 import json
-with open('.forge/projects/current/features.json') as f:
+with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 done_ids = [f['id'] for f in data['features'] if f['status'] == 'done']
 print(', '.join(done_ids) if done_ids else 'none')
@@ -66,14 +66,14 @@ else
 fi
 
 # --- Determine session number ---
-SESSION_NUM=$(grep -c "^Session:" .forge/projects/current/progress.txt 2>/dev/null) || SESSION_NUM=0
+SESSION_NUM=$(grep -c "^Session:" docs/projects/current/progress.txt 2>/dev/null) || SESSION_NUM=0
 SESSION_NUM=$((SESSION_NUM + 1))
 
 # --- Recent commits ---
 RECENT_COMMITS=$(git log --oneline -3 2>/dev/null | head -3 || echo "  (no commits)")
 
 # --- Append to progress.txt ---
-cat >> .forge/projects/current/progress.txt << ENTRY
+cat >> docs/projects/current/progress.txt << ENTRY
 
 ---
 Session: $SESSION_NUM ($(date +%Y-%m-%d))
@@ -94,7 +94,7 @@ echo "Tests: $TEST_STATUS"
 # --- Update dependency blocking ---
 python3 -c "
 import json
-with open('.forge/projects/current/features.json') as f:
+with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 done_ids = {f['id'] for f in data['features'] if f['status'] == 'done'}
 changed = False
@@ -103,6 +103,6 @@ for feat in data['features']:
         deps = feat.get('depends_on', [])
         all_met = all(d in done_ids for d in deps)
         # No status change here — just informational
-with open('.forge/projects/current/features.json', 'w') as f:
+with open('docs/projects/current/features.json', 'w') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
 " 2>/dev/null

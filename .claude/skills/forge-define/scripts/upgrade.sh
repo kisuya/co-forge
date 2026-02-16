@@ -13,7 +13,7 @@
 #
 # What it does NOT touch:
 #   - AGENTS.md, docs/, src/, tests/ (project-specific)
-#   - .forge/projects/ (project state)
+#   - docs/projects/ (project state)
 #   - .forge/scripts/test_fast.sh (generated per tech stack)
 
 set -e

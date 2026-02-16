@@ -64,10 +64,11 @@ my-project/
 ├── AGENTS.md              ← git tracked
 ├── docs/                  ← git tracked
 │   ├── prd.md, architecture.md, conventions.md, tech_stack.md
-│   └── backlog.md         ← shared: agents append, humans add ideas
+│   ├── backlog.md         ← shared: agents append, humans add ideas
+│   └── projects/          ← project state + archived history
 ├── src/                   ← git tracked (product code)
 ├── tests/                 ← git tracked (product tests)
-└── .gitignore             ← ".forge/projects/current/" only
+└── .gitignore
 ```
 
 ## Feature Discovery Flow (docs/backlog.md)
@@ -169,8 +170,8 @@ Sprint checkpoints and project retrospectives are fundamentally different:
 | Sprint checkpoint | .forge/scripts/checkpoint.sh | orchestrate.sh (bash) |
 | Project retrospective | .claude/skills/forge-retro/ | User + agent (interactive) |
 | Project scoping | .claude/skills/forge-project/ | User + agent (interactive) |
-| Feature state | .forge/projects/current/features.json | Agents + scripts (shared) |
-| Progress log | .forge/projects/current/progress.txt | Agents + scripts (shared) |
+| Feature state | docs/projects/current/features.json | Agents + scripts (shared) |
+| Progress log | docs/projects/current/progress.txt | Agents + scripts (shared) |
 | Feature discovery | docs/backlog.md | Agents (append) + humans (add) |
 
 ## Anti-Patterns

@@ -56,7 +56,7 @@ fi
 
 # --- Step 1: Create .forge/ structure ---
 echo "Creating .forge/ directory structure..."
-mkdir -p .forge/scripts .forge/templates .forge/projects/current tests
+mkdir -p .forge/scripts .forge/templates docs/projects/current tests
 
 # --- Step 2: Install runtime scripts ---
 echo "Installing runtime scripts..."
@@ -121,9 +121,9 @@ fi
 
 # --- Step 5: Create project placeholders ---
 echo "Creating project placeholders..."
-echo "# New Project" > .forge/projects/current/spec.md
-echo '{"project":"","goal":"","agent":"","features":[]}' > .forge/projects/current/features.json
-echo "No progress yet." > .forge/projects/current/progress.txt
+echo "# New Project" > docs/projects/current/spec.md
+echo '{"project":"","goal":"","agent":"","features":[]}' > docs/projects/current/features.json
+echo "No progress yet." > docs/projects/current/progress.txt
 
 # --- Step 6: Create docs/backlog.md ---
 echo "Creating backlog..."
@@ -152,7 +152,7 @@ def test_agents_md_exists():
     assert os.path.exists("AGENTS.md")
 
 def test_features_json_valid():
-    with open(".forge/projects/current/features.json") as f:
+    with open("docs/projects/current/features.json") as f:
         data = json.load(f)
     assert "features" in data
 PYEOF
@@ -163,7 +163,7 @@ test('AGENTS.md exists', () => {
   expect(fs.existsSync('AGENTS.md')).toBe(true);
 });
 test('features.json is valid', () => {
-  const data = JSON.parse(fs.readFileSync('.forge/projects/current/features.json'));
+  const data = JSON.parse(fs.readFileSync('docs/projects/current/features.json'));
   expect(data).toHaveProperty('features');
 });
 JSEOF
@@ -171,7 +171,7 @@ else
   cat > tests/test_smoke.sh << 'SHEOF'
 #!/bin/bash
 [ -f "AGENTS.md" ] || { echo "FAIL: AGENTS.md missing"; exit 1; }
-python3 -c "import json; json.load(open('.forge/projects/current/features.json'))" \
+python3 -c "import json; json.load(open('docs/projects/current/features.json'))" \
   || { echo "FAIL: features.json invalid"; exit 1; }
 echo "Smoke test passed."
 SHEOF
@@ -183,9 +183,6 @@ if [ ! -d ".git" ]; then
   echo "Initializing git..."
   git init -q
   cat > .gitignore << 'GITEOF'
-# Forge: active project state (ephemeral, per-developer)
-.forge/projects/current/
-
 # Common ignores
 node_modules/
 __pycache__/
@@ -200,13 +197,6 @@ GITEOF
   git commit -q -m "Initial harness setup (forge scaffold)"
   echo "  Git initialized with initial commit."
 else
-  # Ensure .forge/projects/current/ is gitignored even on existing repos
-  if ! grep -q "\.forge/projects/current/" .gitignore 2>/dev/null; then
-    echo "" >> .gitignore
-    echo "# Forge: active project state (ephemeral, per-developer)" >> .gitignore
-    echo ".forge/projects/current/" >> .gitignore
-    echo "  Added .forge/projects/current/ to .gitignore"
-  fi
   echo "  Git already initialized."
 fi
 
@@ -222,10 +212,9 @@ PASS=true
 [ -f ".forge/scripts/test_fast.sh" ]         && echo "  ✓ .forge/scripts/test_fast.sh"   || { echo "  ✗ .forge/scripts/test_fast.sh"; PASS=false; }
 [ -f ".forge/scripts/upgrade.sh" ]           && echo "  ✓ .forge/scripts/upgrade.sh"     || { echo "  ✗ .forge/scripts/upgrade.sh"; PASS=false; }
 [ -d ".forge/templates" ]                    && echo "  ✓ .forge/templates/"              || { echo "  ✗ .forge/templates/"; PASS=false; }
-[ -f ".forge/projects/current/features.json" ] && echo "  ✓ .forge/projects/current/"    || { echo "  ✗ .forge/projects/current/"; PASS=false; }
+[ -f "docs/projects/current/features.json" ] && echo "  ✓ docs/projects/current/"    || { echo "  ✗ docs/projects/current/"; PASS=false; }
 [ -d "tests" ]                               && echo "  ✓ tests/"                        || { echo "  ✗ tests/"; PASS=false; }
 [ -f "docs/backlog.md" ]                     && echo "  ✓ docs/backlog.md"               || { echo "  ✗ docs/backlog.md"; PASS=false; }
-grep -q "\.forge/projects/current/" .gitignore 2>/dev/null && echo "  ✓ .forge/projects/current/ in .gitignore" || { echo "  ✗ .forge/projects/current/ not in .gitignore"; PASS=false; }
 
 echo ""
 if $PASS; then

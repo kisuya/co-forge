@@ -29,7 +29,7 @@ fi
 get_pending() {
   python3 -c "
 import json
-with open('.forge/projects/current/features.json') as f:
+with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 print(sum(1 for f in data['features'] if f['status'] != 'done'))
 "
@@ -38,7 +38,7 @@ print(sum(1 for f in data['features'] if f['status'] != 'done'))
 get_done() {
   python3 -c "
 import json
-with open('.forge/projects/current/features.json') as f:
+with open('docs/projects/current/features.json') as f:
     data = json.load(f)
 print(sum(1 for f in data['features'] if f['status'] == 'done'))
 "
@@ -46,15 +46,15 @@ print(sum(1 for f in data['features'] if f['status'] == 'done'))
 
 build_prompt() {
   # Embed full context so the agent can work autonomously
-  local SPEC=$(head -20 .forge/projects/current/spec.md 2>/dev/null)
-  local FEATURES=$(cat .forge/projects/current/features.json 2>/dev/null)
+  local SPEC=$(head -20 docs/projects/current/spec.md 2>/dev/null)
+  local FEATURES=$(cat docs/projects/current/features.json 2>/dev/null)
 
   cat << PROMPT
 Read AGENTS.md first, then follow these instructions.
 
 ## Session Protocol
 1. Run: source .forge/scripts/init.sh
-2. Read .forge/projects/current/features.json
+2. Read docs/projects/current/features.json
 3. Find the FIRST feature with status="pending" whose dependencies are all "done"
 4. Implement that feature following docs/prd.md and docs/architecture.md
 5. Write tests for the feature
@@ -72,7 +72,7 @@ $FEATURES
 ## Critical Rules
 - NEVER modify existing tests or docs/ files
 - ALWAYS run ./.forge/scripts/test_fast.sh before marking a feature done
-- ALWAYS update .forge/projects/current/features.json status to "done" after passing tests
+- ALWAYS update docs/projects/current/features.json status to "done" after passing tests
 - If blocked: set status to "blocked", commit, and exit
 - If you discover a new feature is needed, append one line to docs/backlog.md and continue. Do NOT add it to features.json.
 PROMPT
@@ -93,7 +93,7 @@ PREV_PENDING=$(get_pending)
 echo "=== Forge Orchestrator ==="
 echo "Agent: $AGENT"
 echo "Max sessions: $MAX_SESSIONS"
-echo "Project: $(head -1 .forge/projects/current/spec.md)"
+echo "Project: $(head -1 docs/projects/current/spec.md)"
 echo "Pending features: $PREV_PENDING"
 echo ""
 
@@ -164,6 +164,6 @@ echo "Features done: $(get_done)"
 echo "Features remaining: $(get_pending)"
 echo ""
 echo "Next steps (interactive):"
-echo "  1. Review:  cat .forge/projects/current/progress.txt"
+echo "  1. Review:  cat docs/projects/current/progress.txt"
 echo "  2. Retro:   /forge-retro (Claude) or \$forge-retro (Codex)"
 echo "  3. Next:    /forge-project (Claude) or \$forge-project (Codex)"

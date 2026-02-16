@@ -18,7 +18,7 @@ Project retrospective. AI analyzes data and facilitates discussion; templates de
 **This skill is designed for interactive use.**
 
 **Produces:**
-- `.forge/projects/{name}/retrospective.md` (from `.forge/templates/retrospective_md.template`)
+- `docs/projects/{name}/retrospective.md` (from `.forge/templates/retrospective_md.template`)
 - Updated `docs/architecture.md`
 - Updated `AGENTS.md` (if needed)
 
@@ -28,7 +28,7 @@ Project retrospective. AI analyzes data and facilitates discussion; templates de
 
 ## Prerequisites
 
-- A project in `.forge/projects/current/` with features marked "done"
+- A project in `docs/projects/current/` with features marked "done"
 - If no features done: "아직 완료된 기능이 없습니다. 먼저 코딩 세션을 실행하세요."
 
 ## Workflow
@@ -37,8 +37,8 @@ Project retrospective. AI analyzes data and facilitates discussion; templates de
 
 Collect objective facts. No judgment yet:
 
-1. Read `.forge/projects/current/features.json` — count done, deferred, remaining
-2. Read `.forge/projects/current/progress.txt` — count sessions, read notes
+1. Read `docs/projects/current/features.json` — count done, deferred, remaining
+2. Read `docs/projects/current/progress.txt` — count sessions, read notes
 3. Run `git log` — commit history for this project
 4. Run full test suite — record results
 5. Calculate timeline from progress.txt dates
@@ -76,7 +76,7 @@ Suggest a descriptive name (e.g., "auth-and-user-management"). Let the user conf
 Read `.forge/templates/retrospective_md.template`. Fill in all `{{placeholders}}`
 using data from Step 1 + user input from Step 2.
 
-Write to `.forge/projects/{name}/retrospective.md`.
+Write to `docs/projects/{name}/retrospective.md`.
 
 Write this WITH the user — incorporate their exact words where possible.
 
@@ -101,10 +101,10 @@ Ask: "AGENTS.md에 추가하거나 바꿀 규칙이 있나요?"
 
 ### Step 8: Verify
 
-1. `.forge/projects/{name}/retrospective.md` — reviewed by user
+1. `docs/projects/{name}/retrospective.md` — reviewed by user
 2. `docs/architecture.md` — matches codebase
 3. `AGENTS.md` — accurate and actionable
-4. `.forge/projects/current/` — clean slate
+4. `docs/projects/current/` — clean slate
 5. Full test suite passes
 6. `docs/backlog.md` — processed (no stale items from this project)
 
