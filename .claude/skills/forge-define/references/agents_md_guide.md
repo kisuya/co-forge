@@ -18,7 +18,7 @@ Bad: 30 lines explaining the architecture inline.
 ## Rules: Be Specific
 
 Bad: "Write clean code."
-Good: "Files must not exceed 300 lines."
+Good: "One file, one responsibility — split when a file handles multiple concerns."
 
 Bad: "Test your code."
 Good: "Run .forge/scripts/test_fast.sh before every commit."

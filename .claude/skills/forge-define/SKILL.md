@@ -138,7 +138,7 @@ Read `references/agents_md_guide.md`. Write `AGENTS.md` in repo root:
   - Do NOT run git commit — checkpoint.sh handles commits between sessions
   - Update docs/projects/current/features.json when completing a feature
   - Append to docs/backlog.md if new features discovered (never modify features.json scope)
-  - Files must not exceed 300 lines
+  - One file, one responsibility — split when a file handles multiple concerns
   - (add tech-stack-specific rules from docs/conventions.md)
 - **Session Start Protocol**: `source .forge/scripts/init.sh`
 - **Project Context**: points to docs/projects/current/
