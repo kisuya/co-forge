@@ -75,8 +75,10 @@ prev_done = set()
 try:
     with open('docs/projects/current/progress.txt') as f:
         content = f.read()
-    # Read from hidden meta line (<!-- done: ... -->) written by previous checkpoint
+    # Try new meta format first, fall back to old all-time format
     matches = re.findall(r'<!-- done: (.+?) -->', content)
+    if not matches:
+        matches = re.findall(r'Features done \(all-time\): (.+)', content)
     if matches:
         prev_done = {x.strip() for x in matches[-1].split(',')}
 except FileNotFoundError:
@@ -107,13 +109,14 @@ fi
 SESSION_NUM=$(grep -c "^Session:" docs/projects/current/progress.txt 2>/dev/null) || SESSION_NUM=0
 SESSION_NUM=$((SESSION_NUM + 1))
 
-# --- Find last checkpoint commit for session-scoped log ---
+# --- Session-scoped commits (since last checkpoint, capped at 10) ---
 LAST_CHECKPOINT=$(git log --oneline --grep="^Session " -1 --format="%H" 2>/dev/null || true)
 if [ -n "$LAST_CHECKPOINT" ]; then
-  SESSION_COMMITS=$(git log --oneline "$LAST_CHECKPOINT"..HEAD 2>/dev/null || echo "  none")
+  SESSION_COMMITS=$(git log --oneline "$LAST_CHECKPOINT"..HEAD 2>/dev/null | head -10)
 else
   SESSION_COMMITS=$(git log --oneline -5 2>/dev/null || echo "  none")
 fi
+[ -z "$SESSION_COMMITS" ] && SESSION_COMMITS="  none"
 
 # --- Collect AI summary (agent appends "Summary: ..." before exit) ---
 AI_SUMMARY=$(grep "^Summary:" docs/projects/current/progress.txt 2>/dev/null | tail -1 || true)
@@ -137,7 +140,7 @@ fi
 cat >> docs/projects/current/progress.txt << ENTRY
 
 ---
-Session: $SESSION_NUM ($(date +%Y-%m-%d %H:%M))
+Session: $SESSION_NUM ($(date '+%Y-%m-%d %H:%M'))
 ${AI_SUMMARY:-Summary: (no agent summary)}
 Features this session: $NEW_IDS
 Progress: $DONE/$TOTAL done ($PENDING pending, $BLOCKED blocked)
