@@ -70,7 +70,7 @@ fi
 
 for script in init.sh checkpoint.sh new_project.sh orchestrate.sh upgrade.sh; do
   if [ -f "$SCRIPT_DIR/$script" ]; then
-    cp "$SCRIPT_DIR/$script" ".forge/scripts/$script"
+    ln -sf "../../.claude/skills/forge-define/scripts/$script" ".forge/scripts/$script"
   else
     echo "  Warning: $script not found in $SCRIPT_DIR"
   fi
@@ -113,7 +113,9 @@ chmod +x .forge/scripts/*.sh
 echo "Installing templates..."
 TEMPLATE_SRC="$SKILL_DIR/templates"
 if [ -d "$TEMPLATE_SRC" ]; then
-  cp "$TEMPLATE_SRC"/*.template .forge/templates/ 2>/dev/null
+  for tmpl in "$TEMPLATE_SRC"/*.template; do
+    ln -sf "../../.claude/skills/forge-define/templates/$(basename "$tmpl")" ".forge/templates/$(basename "$tmpl")"
+  done
   echo "  $(ls .forge/templates/*.template 2>/dev/null | wc -l | tr -d ' ') templates installed"
 else
   echo "  Warning: Template source not found at $TEMPLATE_SRC"
