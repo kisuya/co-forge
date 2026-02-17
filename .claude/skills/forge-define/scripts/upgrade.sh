@@ -18,6 +18,11 @@
 
 set -e
 
+# Wrap in { ... exit; } so bash reads the entire script into memory before
+# executing.  Step 4 (git checkout) overwrites this file (or its symlink target),
+# which would corrupt a streaming read.
+{
+
 TEMPLATE_REMOTE="template"
 TEMPLATE_URL="https://github.com/kisuya/co-forge.git"
 
@@ -106,3 +111,6 @@ echo "  git diff             (unstaged changes)"
 echo ""
 echo "If everything looks good:"
 echo "  git add -A && git commit -m 'Upgrade forge harness'"
+
+exit
+}
