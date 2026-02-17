@@ -137,7 +137,7 @@ run_coding_session() {
   else
     # --dangerously-skip-permissions: autonomous mode requires no human approval.
     # The human gate is at forge-project and forge-retro, not during coding.
-    claude -p --output-format stream-json --dangerously-skip-permissions "$1" &
+    claude -p --verbose --output-format stream-json --dangerously-skip-permissions "$1" &
   fi
   CHILD_PID=$!
   wait "$CHILD_PID" && exit_code=0 || exit_code=$?
