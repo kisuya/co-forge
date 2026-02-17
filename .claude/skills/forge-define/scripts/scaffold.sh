@@ -107,7 +107,7 @@ exit 0
 EOF
 fi
 
-chmod +x .forge/scripts/*.sh
+chmod +x .forge/scripts/test_fast.sh
 
 # --- Step 4: Install templates ---
 echo "Installing templates..."
