@@ -97,16 +97,19 @@ Read AGENTS.md for project context and rules. For this autonomous session, follo
 
 ## Session Protocol
 1. Run: source .forge/scripts/init.sh
-2. Read docs/projects/current/features.json
-3. Find the FIRST feature with status="pending" whose dependencies are all "done"
-4. Implement that feature following docs/prd.md and docs/architecture.md
-5. Write tests for the feature
-6. Run: ./.forge/scripts/test_fast.sh
-7. If tests pass, update features.json: change that feature's status to "done"
-8. Before picking the next feature, check if it belongs to the same domain as your current work:
-   - Same domain (e.g., auth-001 → auth-002): continue, repeat from step 3
+2. Check "Uncommitted Changes" section from init.sh output:
+   - If changes exist: a previous session was interrupted mid-feature. Review the diff, identify which feature was in progress, and CONTINUE from where it left off — do not rewrite from scratch.
+   - If clean: proceed normally.
+3. Read docs/projects/current/features.json
+4. Find the FIRST feature with status="pending" whose dependencies are all "done"
+5. Implement that feature following docs/prd.md and docs/architecture.md
+6. Write tests for the feature
+7. Run: ./.forge/scripts/test_fast.sh
+8. If tests pass, update features.json: change that feature's status to "done"
+9. Before picking the next feature, check if it belongs to the same domain as your current work:
+   - Same domain (e.g., auth-001 → auth-002): continue, repeat from step 4
    - Different domain (e.g., auth-003 → notify-001): stop and exit — this is a context boundary
-9. Hard limit: stop after 10 features regardless of domain continuity
+10. Hard limit: stop after 10 features regardless of domain continuity
 - Do NOT run git commit — the orchestrator commits between sessions via checkpoint.sh
 - Do NOT try to finish all remaining features in one session — exit at context boundaries so each session produces a focused, coherent changeset
 - Before exiting, append a 1-2 line session summary to docs/projects/current/progress.txt:

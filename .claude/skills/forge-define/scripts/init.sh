@@ -14,6 +14,18 @@ echo "=== Project Goal ==="
 head -5 docs/projects/current/spec.md 2>/dev/null || echo "  (no spec.md)"
 
 echo ""
+echo "=== Uncommitted Changes ==="
+UNSTAGED=$(git diff --stat 2>/dev/null)
+STAGED=$(git diff --cached --stat 2>/dev/null)
+if [ -n "$UNSTAGED" ] || [ -n "$STAGED" ]; then
+  echo "  ⚠ In-progress work detected from a previous interrupted session."
+  [ -n "$STAGED" ] && echo "$STAGED" | sed 's/^/  [staged] /'
+  [ -n "$UNSTAGED" ] && echo "$UNSTAGED" | sed 's/^/  /'
+else
+  echo "  (clean working tree)"
+fi
+
+echo ""
 echo "=== Recent Commits ==="
 git log --oneline -5 2>/dev/null || echo "  (no commits yet)"
 
