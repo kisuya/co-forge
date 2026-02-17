@@ -58,7 +58,7 @@ print(done, pending, blocked, total)
 
 echo "Features: $DONE done / $TOTAL total ($PENDING pending, $BLOCKED blocked)"
 
-# --- Completed feature IDs (all-time, for progress.txt) ---
+# --- Completed feature IDs (all-time, for delta calculation) ---
 COMPLETED_IDS=$(python3 -c "
 import json
 with open('docs/projects/current/features.json') as f:
@@ -67,7 +67,7 @@ done_ids = [f['id'] for f in data['features'] if f['status'] == 'done']
 print(', '.join(done_ids) if done_ids else 'none')
 ")
 
-# --- Delta: newly completed feature IDs (this session only, for commit message) ---
+# --- Delta: newly completed feature IDs (this session only) ---
 NEW_IDS=$(python3 -c "
 import json, re
 
@@ -75,7 +75,8 @@ prev_done = set()
 try:
     with open('docs/projects/current/progress.txt') as f:
         content = f.read()
-    matches = re.findall(r'Features done \(all-time\): (.+)', content)
+    # Read from hidden meta line (<!-- done: ... -->) written by previous checkpoint
+    matches = re.findall(r'<!-- done: (.+?) -->', content)
     if matches:
         prev_done = {x.strip() for x in matches[-1].split(',')}
 except FileNotFoundError:
@@ -106,16 +107,44 @@ fi
 SESSION_NUM=$(grep -c "^Session:" docs/projects/current/progress.txt 2>/dev/null) || SESSION_NUM=0
 SESSION_NUM=$((SESSION_NUM + 1))
 
+# --- Find last checkpoint commit for session-scoped log ---
+LAST_CHECKPOINT=$(git log --oneline --grep="^Session " -1 --format="%H" 2>/dev/null || true)
+if [ -n "$LAST_CHECKPOINT" ]; then
+  SESSION_COMMITS=$(git log --oneline "$LAST_CHECKPOINT"..HEAD 2>/dev/null || echo "  none")
+else
+  SESSION_COMMITS=$(git log --oneline -5 2>/dev/null || echo "  none")
+fi
+
+# --- Collect AI summary (agent appends "Summary: ..." before exit) ---
+AI_SUMMARY=$(grep "^Summary:" docs/projects/current/progress.txt 2>/dev/null | tail -1 || true)
+# Remove the raw Summary line so it's merged into the structured entry
+if [ -n "$AI_SUMMARY" ]; then
+  python3 -c "
+import re
+with open('docs/projects/current/progress.txt') as f:
+    lines = f.readlines()
+# Remove last occurrence of Summary: line
+for i in range(len(lines)-1, -1, -1):
+    if lines[i].startswith('Summary:'):
+        del lines[i]
+        break
+with open('docs/projects/current/progress.txt', 'w') as f:
+    f.writelines(lines)
+"
+fi
+
 # --- Append to progress.txt ---
 cat >> docs/projects/current/progress.txt << ENTRY
 
 ---
 Session: $SESSION_NUM ($(date +%Y-%m-%d %H:%M))
-Features done (all-time): $COMPLETED_IDS
-Features remaining: $PENDING pending, $BLOCKED blocked
-Test status: $TEST_STATUS
-Recent commits:
-$(git log --oneline -5 2>/dev/null || echo "  none")
+${AI_SUMMARY:-Summary: (no agent summary)}
+Features this session: $NEW_IDS
+Progress: $DONE/$TOTAL done ($PENDING pending, $BLOCKED blocked)
+Tests: $TEST_STATUS
+Commits:
+$SESSION_COMMITS
+<!-- done: $COMPLETED_IDS -->
 ENTRY
 
 echo ""

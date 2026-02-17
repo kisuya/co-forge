@@ -109,6 +109,9 @@ Read AGENTS.md for project context and rules. For this autonomous session, follo
 9. Hard limit: stop after 10 features regardless of domain continuity
 - Do NOT run git commit — the orchestrator commits between sessions via checkpoint.sh
 - Do NOT try to finish all remaining features in one session — exit at context boundaries so each session produces a focused, coherent changeset
+- Before exiting, append a 1-2 line session summary to docs/projects/current/progress.txt:
+  "Summary: [what you built/fixed] [blockers if any]"
+  Example: "Summary: auth-001~003 구현 (회원가입, 로그인, JWT). auth-004는 이메일 서비스 미구성으로 blocked."
 
 ## Previous Session (git log)
 ${PREV_SESSION:-First session — no previous context.}
