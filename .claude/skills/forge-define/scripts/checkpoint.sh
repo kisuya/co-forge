@@ -110,7 +110,7 @@ SESSION_NUM=$((SESSION_NUM + 1))
 cat >> docs/projects/current/progress.txt << ENTRY
 
 ---
-Session: $SESSION_NUM ($(date +%Y-%m-%d))
+Session: $SESSION_NUM ($(date +%Y-%m-%d %H:%M))
 Features done (all-time): $COMPLETED_IDS
 Features remaining: $PENDING pending, $BLOCKED blocked
 Test status: $TEST_STATUS
