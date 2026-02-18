@@ -23,6 +23,9 @@ Project retrospective. AI analyzes data and facilitates discussion; templates de
 - Updated `README.md` (if needed)
 - Updated `AGENTS.md` (if needed)
 
+**Also modifies (Step 4):**
+- `docs/prd.md` — completion status only (`[ ]` → `[x]`), no scope changes
+
 ## Reference Files
 
 → `references/retrospective_guide.md` — review approach, improvement patterns
@@ -75,13 +78,27 @@ forge-project looks forward (what do we build next?). PRD changes are product sc
 decisions that belong in forge-project Step 0, where they get proper prioritization
 with full context of the upcoming phase.
 
-### Step 4: Archive
+### Step 4: Mark PRD Completion Status
+
+Cross-reference features.json "done" features with PRD acceptance criteria.
+This is **completion recording**, not scope modification — Step 3 boundary still applies.
+
+1. For each "done" feature in features.json, find the corresponding PRD acceptance criteria
+2. Mark completed criteria: `- [ ]` → `- [x]`
+3. If ALL acceptance criteria of a PRD feature are checked, add `✅` to the feature header:
+   `#### F1. 관심 종목 등록/관리` → `#### F1. 관심 종목 등록/관리 ✅`
+4. If only some criteria are done, leave the header unmarked (partially complete)
+5. Present the changes to the user for confirmation before saving
+
+**Do NOT** add, remove, or reword any PRD content. Only toggle checkboxes.
+
+### Step 5: Archive
 
 Run `./.forge/scripts/new_project.sh [project-name]`
 
 Suggest a descriptive name (e.g., "auth-and-user-management"). Let the user confirm.
 
-### Step 5: Write Retrospective ← AI judgment
+### Step 6: Write Retrospective ← AI judgment
 
 Read `.forge/templates/retrospective_md.template`. Fill in all `{{placeholders}}`
 using data from Step 1 + user input from Step 2.
@@ -90,7 +107,7 @@ Write to `docs/projects/{name}/retrospective.md`.
 
 Write this WITH the user — incorporate their exact words where possible.
 
-### Step 6: Update Architecture ← AI judgment
+### Step 7: Update Architecture ← AI judgment
 
 Update `docs/architecture.md` with **decisions and reasoning only** (code is the source of truth for implementation details):
 - New architectural decisions made during this project (e.g., "chose WebSocket over polling because...")
@@ -103,7 +120,7 @@ Check `docs/conventions.md` for new patterns to formalize.
 
 Review `README.md` — if it doesn't accurately reflect the current product (still template default, outdated setup steps, missing commands), update it.
 
-### Step 7: Review AGENTS.md ← AI judgment (most impactful)
+### Step 8: Review AGENTS.md ← AI judgment (most impactful)
 
 Changes here affect every future agent session.
 
@@ -114,7 +131,7 @@ Check:
 
 Ask: "AGENTS.md에 추가하거나 바꿀 규칙이 있나요?"
 
-### Step 8: Verify
+### Step 9: Verify
 
 1. `docs/projects/{name}/retrospective.md` — reviewed by user
 2. `docs/architecture.md` — matches codebase
@@ -122,8 +139,9 @@ Ask: "AGENTS.md에 추가하거나 바꿀 규칙이 있나요?"
 4. `docs/projects/current/` — clean slate
 5. Full test suite passes
 6. `docs/backlog.md` — reviewed and annotated (items preserved for forge-project to process)
+7. `docs/prd.md` — completion checkboxes match features.json status
 
-### Step 9: Git Commit
+### Step 10: Git Commit
 
 Commit all retrospective changes:
 
@@ -132,7 +150,7 @@ git add -A
 git commit -m "Retrospective: [project-name]"
 ```
 
-This captures: retrospective.md, updated architecture.md, updated AGENTS.md, annotated backlog.md.
+This captures: retrospective.md, updated architecture.md, updated AGENTS.md, annotated backlog.md, PRD completion status.
 
 ### Handoff
 

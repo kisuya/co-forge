@@ -72,10 +72,12 @@ Read:
 - Previous `docs/projects/*/retrospective.md` — **both** deferred features **and** lessons
 - Previous `docs/projects/*/features.json` — what's already been built
 
-**1a. Feature assessment** — scan completed phases and cross-reference with PRD:
-- Which features are done?
-- Which were deferred in retrospectives?
-- What remains?
+**1a. Feature assessment** — PRD `[x]` checkboxes (marked by forge-retro) show what's done.
+Cross-reference with previous features.json for confirmation:
+- `[x]` criteria / `✅` features → done. Skip.
+- `[ ]` criteria on partially-done features → candidates for this phase
+- Features with no checkboxes at all → not yet started
+- Deferred features from retrospectives → high priority candidates
 
 **1b. Lesson review** — from the **most recent** retrospective, extract
 **project-scoped lessons only** (not rules already codified elsewhere):
@@ -117,10 +119,17 @@ Read templates from `.forge/templates/` and fill in:
   or conventions.md (e.g., "vertical slice 방식으로 백엔드+프론트 함께 구현").
   For the very first project (no previous retro), write "첫 프로젝트 — 해당 없음".
 
-**features.json** — read `.forge/templates/features_json.template`, generate feature list:
+**features.json** — read `.forge/templates/features_json.template`, generate feature list.
+**Decompose from PRD — do NOT copy PRD features 1:1.**
+See `references/feature_decomposition.md` for full decomposition rules. Key principles:
+- PRD features are product requirements; features.json entries are **user-action-sized tasks**
+- One PRD feature (e.g., "관심 종목 등록/관리") typically becomes 2-5 features.json entries
+  (e.g., 종목 검색 API, 종목 추가/제거 UI, 관심 목록 표시)
+- Decompose by **사용자가 실제로 하는 행동**, not by PRD hierarchy
+- PRD `[x]` 체크된 수용기준은 이미 완료 — 해당 기능은 건너뛰기
 - Each feature: 30 min - 2 hours of work
 - Unique ID: `[domain]-NNN`
-- `description`: agent-ready mini-spec — see `references/feature_decomposition.md` for 5 required elements
+- `description`: agent-ready mini-spec — 5 required elements (inputs/outputs, success, errors, UX, boundaries)
 - Strict priority ordering, no ties
 - Explicit dependency declarations
 
