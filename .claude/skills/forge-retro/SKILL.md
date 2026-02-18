@@ -57,14 +57,23 @@ Ask focused questions, one at a time:
 
 Let the conversation flow naturally.
 
-### Step 3: Process Backlog
+### Step 3: Review Backlog (do NOT modify PRD)
 
 If `docs/backlog.md` has items added during this project:
-- Present them to the user
-- For each: reflect into `docs/prd.md` with priority, or discard
-- Clean up processed items from `docs/backlog.md`
+- Present them to the user for awareness
+- Discuss relevance and context, but do **NOT** update `docs/prd.md` here
+- Annotate each item with retro context: `- [retro:{{project-name}}] original description`
 
-If no items, skip.
+If the discussion in Step 2 surfaced new feature ideas or improvements:
+- Append them to `docs/backlog.md` with source tag: `- [retro] description`
+- Do **NOT** add them directly to `docs/prd.md`
+
+If no backlog items and no new ideas from discussion, skip.
+
+**Why this boundary matters:** forge-retro looks backward (what did we learn?),
+forge-project looks forward (what do we build next?). PRD changes are product scope
+decisions that belong in forge-project Step 0, where they get proper prioritization
+with full context of the upcoming phase.
 
 ### Step 4: Archive
 
@@ -112,7 +121,7 @@ Ask: "AGENTS.md에 추가하거나 바꿀 규칙이 있나요?"
 3. `AGENTS.md` — accurate and actionable
 4. `docs/projects/current/` — clean slate
 5. Full test suite passes
-6. `docs/backlog.md` — processed (no stale items from this project)
+6. `docs/backlog.md` — reviewed and annotated (items preserved for forge-project to process)
 
 ### Step 9: Git Commit
 
@@ -123,7 +132,7 @@ git add -A
 git commit -m "Retrospective: [project-name]"
 ```
 
-This captures: retrospective.md, updated architecture.md, updated AGENTS.md, processed backlog.md.
+This captures: retrospective.md, updated architecture.md, updated AGENTS.md, annotated backlog.md.
 
 ### Handoff
 

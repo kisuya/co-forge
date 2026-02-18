@@ -19,6 +19,10 @@ Scope the next project phase. AI decides WHAT to build; templates define the out
 - `docs/projects/current/features.json` (from `.forge/templates/features_json.template`)
 - `docs/projects/current/progress.txt` (from `.forge/templates/progress_txt.template`)
 
+**Also modifies (Step 0):**
+- `docs/prd.md` — backlog items reflected as new features
+- `docs/backlog.md` — processed items removed
+
 ## Prerequisites
 
 - Harness must exist: AGENTS.md, .forge/scripts/, .forge/templates/, tests/
@@ -42,7 +46,9 @@ If a project is still in progress (features with "pending" or "in_progress"):
 
 ### Step 0: Backlog Review ← AI + User
 
-**This step ensures no discovered features or new ideas are lost.**
+**This is the SOLE step where `docs/prd.md` gets updated from backlog items.**
+forge-retro may annotate backlog items with context but does not modify the PRD.
+All product scope decisions flow through this step.
 
 1. **Check `docs/backlog.md`**: If it contains items (lines starting with `-`):
    - Present all items to the user
@@ -56,18 +62,36 @@ If a project is still in progress (features with "pending" or "in_progress"):
 
 3. If backlog.md was empty AND user has no new ideas, skip silently.
 
-### Step 1: Assess Remaining Backlog ← AI judgment
+### Step 1: Assess Remaining Backlog + Review Lessons ← AI judgment
 
 Read:
 - `docs/prd.md` — full feature backlog (now updated from Step 0)
 - `docs/architecture.md` — architecture decisions and tech stack
-- Previous `docs/projects/*/retrospective.md` — lessons and deferred features
+- `AGENTS.md` — current agent rules (needed for Step 1b dedup)
+- `docs/conventions.md` — current coding patterns (needed for Step 1b dedup)
+- Previous `docs/projects/*/retrospective.md` — **both** deferred features **and** lessons
 - Previous `docs/projects/*/features.json` — what's already been built
 
-Scan `docs/projects/` for completed phases. Cross-reference with `docs/prd.md`:
+**1a. Feature assessment** — scan completed phases and cross-reference with PRD:
 - Which features are done?
 - Which were deferred in retrospectives?
 - What remains?
+
+**1b. Lesson review** — from the **most recent** retrospective, extract
+**project-scoped lessons only** (not rules already codified elsewhere):
+
+- Permanent rules (e.g., "404 반환 필수") → already in AGENTS.md. **Skip.**
+- Architecture decisions → already in architecture.md. **Skip.**
+- Coding patterns → already in conventions.md. **Skip.**
+- **Project approach / scoping lessons** → these belong in spec.md. **Extract.**
+  Examples: "백엔드만 몰아치면 사용 가능한 기능이 없다",
+  "UI 완성도를 피처 수용기준에 명시해야 한다",
+  "vertical slice로 작업해야 한다"
+
+Present extracted lessons to the user:
+- "이전 회고에서 이번 프로젝트 접근 방식에 영향줄 교훈이 있습니다: [list]. 반영할까요?"
+
+Carry confirmed lessons forward to Step 3 (spec.md `{{LESSONS_FROM_RETRO}}`).
 
 ### Step 2: Scope the Next Phase ← AI judgment
 
@@ -88,6 +112,10 @@ Read templates from `.forge/templates/` and fill in:
 **spec.md** — read `.forge/templates/spec_md.template`, fill in:
 - `{{PROJECT_NUMBER}}`, `{{PROJECT_NAME}}`, `{{GOAL}}`
 - `{{CONTEXT}}`, `{{SCOPE}}`, `{{OUT_OF_SCOPE}}`
+- `{{LESSONS_FROM_RETRO}}` — **project approach lessons** confirmed in Step 1b.
+  Only include scoping/approach guidance NOT already codified in AGENTS.md, architecture.md,
+  or conventions.md (e.g., "vertical slice 방식으로 백엔드+프론트 함께 구현").
+  For the very first project (no previous retro), write "첫 프로젝트 — 해당 없음".
 
 **features.json** — read `.forge/templates/features_json.template`, generate feature list:
 - Each feature: 30 min - 2 hours of work

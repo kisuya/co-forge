@@ -12,6 +12,9 @@
 ## Out of Scope
 {{OUT_OF_SCOPE}}
 
+## Approach Guidance (from previous retro)
+{{LESSONS_FROM_RETRO}}
+
 ## Definition of Done
 - All features in features.json are "done"
 - All tests pass (including all previous tests)
