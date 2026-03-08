@@ -127,6 +127,10 @@ class ForgeSessionTest(unittest.TestCase):
                   notes)
                     printf '\\n- synthetic progress\\n' >> docs/documentation.md
                     ;;
+                  pwdfail)
+                    printf '%s\\n' "$PWD" > forge-run-cwd.txt
+                    exit 1
+                    ;;
                   noop)
                     ;;
                   *)
@@ -305,6 +309,18 @@ class ForgeSessionTest(unittest.TestCase):
         self.assertEqual(current["worktree_path"], prepared_payload["worktree_path"])
         self.assertEqual(current["status"], "idle")
         self.assertEqual(current["agent"], "claude")
+
+    def test_run_executes_orchestrator_inside_worktree(self) -> None:
+        self.write_active_plan()
+        env = self.install_stub_codex("pwdfail")
+
+        result = run(["./forge", "run", "codex", "--fresh"], self.project, env=env, check=False)
+        self.assertNotEqual(result.returncode, 0)
+
+        current = json.loads((self.project / ".forge/runs/current.json").read_text(encoding="utf-8"))
+        worktree = Path(current["worktree_path"])
+        self.assertEqual((worktree / "forge-run-cwd.txt").read_text(encoding="utf-8").strip(), str(worktree))
+        self.assertFalse((self.project / "forge-run-cwd.txt").exists())
 
     def test_run_prefers_available_agent_when_codex_missing(self) -> None:
         env = self.isolated_path_env(include_claude=True)

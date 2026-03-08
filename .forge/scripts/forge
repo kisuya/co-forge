@@ -124,7 +124,8 @@ case "$cmd" in
         fi
         agent="$resume_agent"
         export FORGE_RUN_ID="$run_id"
-        exec "$worktree/.forge/scripts/orchestrate.sh" "$agent"
+        cd "$worktree"
+        exec ./.forge/scripts/orchestrate.sh "$agent"
       fi
       if [ "$mode" = "resume" ]; then
         echo "forge: No resumable run." >&2
@@ -140,7 +141,8 @@ case "$cmd" in
     worktree="$(printf '%s' "$prepare_json" | json_field worktree_path)"
     run_id="$(printf '%s' "$prepare_json" | json_field run_id)"
     export FORGE_RUN_ID="$run_id"
-    exec "$worktree/.forge/scripts/orchestrate.sh" "$agent"
+    cd "$worktree"
+    exec ./.forge/scripts/orchestrate.sh "$agent"
     ;;
   *)
     echo "Unknown forge command: $cmd" >&2
