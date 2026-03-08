@@ -9,6 +9,21 @@ json_field() {
   python3 -c "import json,sys; print(json.load(sys.stdin)[\"$key\"])"
 }
 
+resolved_agent_json() {
+  python3 "$RUNTIME_PY" preferred-agent --json
+}
+
+emit_agent_resolution_note() {
+  local resolution_json="$1"
+  local preferred selected mode
+  preferred="$(printf '%s' "$resolution_json" | json_field preferred)"
+  selected="$(printf '%s' "$resolution_json" | json_field agent)"
+  mode="$(printf '%s' "$resolution_json" | json_field mode)"
+  if [ "$mode" = "fallback" ]; then
+    echo "forge: Preferred agent $preferred unavailable; using $selected." >&2
+  fi
+}
+
 current_worktree_path() {
   if [ -f ".forge/runs/current.json" ]; then
     python3 - <<'PY'
@@ -63,12 +78,14 @@ case "$cmd" in
     exec "$SCRIPT_DIR/upgrade.sh" "$@"
     ;;
   run)
-    agent="codex"
+    agent=""
+    agent_set=0
     mode="auto"
     while [ "$#" -gt 0 ]; do
       case "$1" in
         claude|codex)
           agent="$1"
+          agent_set=1
           ;;
         --resume)
           mode="resume"
@@ -84,6 +101,15 @@ case "$cmd" in
       shift
     done
     if [ -f ".forge/run-context.json" ]; then
+      if [ "$agent_set" -eq 0 ]; then
+        if resume_json="$(python3 "$RUNTIME_PY" run-resume-info 2>/dev/null)"; then
+          agent="$(printf '%s' "$resume_json" | json_field agent)"
+        else
+          resolution_json="$(resolved_agent_json)"
+          emit_agent_resolution_note "$resolution_json"
+          agent="$(printf '%s' "$resolution_json" | json_field agent)"
+        fi
+      fi
       exec "$SCRIPT_DIR/orchestrate.sh" "$agent"
     fi
     export FORGE_MAIN_ROOT="$(pwd)"
@@ -91,6 +117,12 @@ case "$cmd" in
       if resume_json="$(python3 "$RUNTIME_PY" run-resume-info 2>/dev/null)"; then
         worktree="$(printf '%s' "$resume_json" | json_field worktree_path)"
         run_id="$(printf '%s' "$resume_json" | json_field run_id)"
+        resume_agent="$(printf '%s' "$resume_json" | json_field agent)"
+        if [ "$agent_set" -eq 1 ] && [ "$agent" != "$resume_agent" ]; then
+          echo "forge: Resumable run $run_id was started with $resume_agent. Resume with that agent or use --fresh." >&2
+          exit 1
+        fi
+        agent="$resume_agent"
         export FORGE_RUN_ID="$run_id"
         exec "$worktree/.forge/scripts/orchestrate.sh" "$agent"
       fi
@@ -98,6 +130,11 @@ case "$cmd" in
         echo "forge: No resumable run." >&2
         exit 1
       fi
+    fi
+    if [ "$agent_set" -eq 0 ]; then
+      resolution_json="$(resolved_agent_json)"
+      emit_agent_resolution_note "$resolution_json"
+      agent="$(printf '%s' "$resolution_json" | json_field agent)"
     fi
     prepare_json="$(python3 "$RUNTIME_PY" prepare-run "$agent")"
     worktree="$(printf '%s' "$prepare_json" | json_field worktree_path)"

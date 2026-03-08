@@ -36,25 +36,14 @@ Read only as needed:
 
 - `docs/plans.md`
 - `.forge/state/current/queue.json`
-- `.forge/state/current/validation.json`
 
 ## Also Modifies
 
+- `docs/prompt.md`
 - `docs/prd.md`
+- `docs/architecture.md`
 - `docs/backlog.md`
 - `docs/documentation.md`
-
-## Session State
-
-Start or resume the phase session first:
-
-```bash
-python3 .forge/scripts/runtime.py session-start --phase open
-```
-
-- If the result says `"mode": "resume"`, summarize the unfinished milestone-opening state first.
-- Update progress with `session-update`.
-- Complete only after sync + snapshot succeed.
 
 ## Workflow
 
@@ -63,7 +52,6 @@ python3 .forge/scripts/runtime.py session-start --phase open
 Read:
 - `docs/prd.md`
 - `docs/backlog.md`
-- `docs/user_scenarios.md`
 - `docs/documentation.md`
 - latest retrospective in `docs/projects/*/retrospective.md`
 
@@ -81,8 +69,6 @@ Work with the user to decide:
 
 Keep the milestone small enough for one long-horizon run window.
 
-Set session state to `clarifying`, then `drafting`.
-
 ### Step 3: Write and review `docs/plans.md`
 
 Use `../../../.forge/templates/plans_md.template`.
@@ -92,30 +78,30 @@ Requirements:
 - small task list
 - real validation commands
 - stop-and-fix enabled
+- every acceptance item must map to one or more concrete tests or smoke checks via `[[validation_matrix]]`
+- every task must define how completion will be verified before it can be marked done
+- shell hooks should call repo-owned tests; do not hide the real test logic inside long shell scripts
+- task granularity should let a frontier model complete a meaningful slice in one run session, not force one tiny edit at a time
 
 Pause for human review once the plan is drafted.
-
-Set session state to `awaiting_review`, then `applying_feedback`.
 
 ### Step 4: Final approval gate
 
 Before finalizing, explicitly confirm:
 - in-scope vs out-of-scope
 - acceptance criteria
+- acceptance-to-test mapping
 - smoke scenarios
+- task-level verification steps
 - readiness to hand the milestone to `./forge run`
-
-Set session state to `awaiting_final_approval`.
 
 ### Step 5: Finalize inside the session
 
 After explicit approval:
 
 ```bash
-python3 .forge/scripts/runtime.py session-update --session-id <id> --status finalizing --next-action "Sync state and create the planning snapshot."
 ./forge status
 python3 .forge/scripts/runtime.py snapshot-open
-python3 .forge/scripts/runtime.py session-complete --session-id <id>
 ```
 
 `snapshot-open` is the hidden planning snapshot. Do not push this back onto the user.

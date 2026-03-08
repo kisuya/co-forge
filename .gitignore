@@ -1,7 +1,6 @@
 # Forge v2 runtime state
 .forge/state/current/
 .forge/runs/
-.forge/sessions/
 .forge/worktrees/
 .forge/run-context.json
 

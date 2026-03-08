@@ -25,7 +25,7 @@ cd my-project
 > /forge-open           # $forge-open
 
 # 4. 자율 실행
-./forge run             # 기본 agent: codex
+./forge run             # docs/prompt.md의 default_agent를 우선 사용하고, 없으면 사용 가능한 baseline agent로 fallback
 
 # 5. 결과 리뷰 후 종결 또는 보류
 > /forge-close          # $forge-close
@@ -48,18 +48,14 @@ co-forge/
 │   ├── scripts/                       ← tracked Forge runtime implementation
 │   ├── templates/                     ← tracked document templates
 │   ├── references/                    ← tracked guidance/reference docs
-│   ├── state/current/                 ← docs에서 파생된 실행 상태 (gitignore)
+│   ├── state/current/                 ← active milestone queue + last QA (gitignore)
 │   ├── runs/                          ← shell run 메타데이터 (gitignore)
-│   ├── sessions/                      ← init/open/close phase 상태 (gitignore)
 │   └── worktrees/                     ← 격리 실행 공간 (gitignore)
 ├── docs/
-│   ├── prompt.md                      ← 목표/제약/검증 훅
+│   ├── prompt.md                      ← 목표/제약/검증 훅 + agent baseline profile
 │   ├── plans.md                       ← active milestone source of truth
-│   ├── implement.md                   ← 실행 규칙
 │   ├── documentation.md               ← shared memory + audit log
-│   ├── user_scenarios.md              ← step-by-step 사용자 시나리오
-│   ├── prd.md / architecture.md / conventions.md / tech_stack.md
-│   ├── backlog.md
+│   ├── prd.md / architecture.md / backlog.md
 │   └── projects/                      ← archive snapshots
 └── tests/
 ```
@@ -75,6 +71,7 @@ co-forge/
 
 - 제품 아이디어를 사용자 시나리오 수준까지 선명하게 만듭니다.
 - durable docs를 작성합니다.
+- `docs/prompt.md` 안의 quality bar / primary failure modes / required user journeys까지 같이 고정합니다.
 - 사용자 리뷰를 거친 뒤 scaffold와 `./forge doctor`까지 실행합니다.
 
 ### 2. `/forge-open`
@@ -83,6 +80,7 @@ co-forge/
 
 - backlog와 이전 회고를 검토합니다.
 - 이번 milestone의 scope / acceptance / smoke scenario를 합의합니다.
+- acceptance마다 어떤 테스트나 smoke check가 그것을 검증하는지까지 명시합니다.
 - `docs/plans.md`를 리뷰 후 확정합니다.
 - sync와 planning snapshot은 세션 내부에서 처리합니다.
 
@@ -91,8 +89,14 @@ co-forge/
 실행 전용 단계입니다.
 
 - docs state를 sync합니다.
-- active worktree가 있으면 기본적으로 resume합니다.
+- active worktree가 있으면 원래 agent로 기본 resume합니다.
 - resumable run이 없으면 새 isolated worktree를 엽니다.
+- agent를 명시하지 않으면 설치된 baseline agent 중 사용 가능한 쪽을 자동 선택합니다.
+- preferred agent를 쓸 수 없으면 fallback agent를 명시적으로 알리고 실행합니다.
+- `docs/prompt.md`의 default agent, agent profile, orchestration budget이 실제 CLI 실행에 반영됩니다.
+- pending task 감소나 checkpoint 전 material change가 없으면 3 session 후 human review로 되돌립니다.
+- task는 verification 기준이 있을 때만 done으로 닫아야 합니다.
+- 필요하면 run 내부에서만 선택적으로 sub-agent/team 병렬화를 사용할 수 있고, `./forge status`에서 worker summary를 확인할 수 있습니다.
 
 추가 옵션:
 
@@ -105,31 +109,33 @@ co-forge/
 리뷰 우선 종결 세션입니다.
 
 - 결과, validation, 남은 리스크를 먼저 검토합니다.
+- acceptance가 어떤 테스트나 smoke check로 실제 검증됐는지도 함께 검토합니다.
 - 사람이 수정사항과 개선사항을 논의합니다.
 - retrospective / backlog / durable docs를 반영합니다.
-- 마지막 승인 후 archive합니다.
+- 마지막 승인 후 land + archive합니다.
+- archive snapshot은 마지막 승인 시점의 worktree runtime state를 기준으로 기록됩니다.
 - 아직 닫지 않으면 deferred 상태로 남기고 나중에 이어갈 수 있습니다.
 
 ## Resume 모델
 
-Forge v2는 resume를 기본 동작으로 둡니다.
+Forge v2-lite는 run resume를 기본 동작으로 둡니다.
 
-- `./forge status`는 active phase session과 active run을 같이 보여줍니다.
-- `/forge-init`, `/forge-open`, `/forge-close`는 unfinished session을 감지하면 resume합니다.
+- `./forge status`는 active milestone, last QA, active run을 보여줍니다.
+- sub-agent/team 병렬화를 썼다면 worker summary도 같이 보여줍니다.
 - `./forge run`은 resumable run이 있으면 기본 resume합니다.
-- `close`는 `deferred` 상태를 지원합니다.
+- `/forge-close`는 archive 대신 defer를 선택할 수 있습니다.
 
 ## 명령어
 
 - `./forge run [claude|codex] [--resume|--fresh]` : active run resume 또는 새 isolated run 시작
-- `./forge status` : active phase session, active run, milestone, QA 상태 표시
+- `./forge status` : active run, milestone, queue, QA 상태 표시
 - `./forge doctor` : prerequisites / validation hook / docs sync 상태 점검
 - `./forge upgrade` : 최신 Forge 하니스 반영
 
 고급/내부 명령:
 
 - `./forge qa`
-- `./forge archive <name>`
+- `./forge archive <name>` : active run worktree가 없을 때 main workspace snapshot만 수동 archive
 
 ## 설계 원칙
 
@@ -137,6 +143,8 @@ Forge v2는 resume를 기본 동작으로 둡니다.
 - 기계적으로 오래 돌릴 단계만 shell로 뺍니다.
 - validation은 가능한 한 실제 사용자 표면에서 수행합니다.
 - 다음 milestone은 항상 사람이 다시 엽니다.
+- close는 active run branch를 main으로 land한 뒤 archive합니다.
+- 병렬화가 필요하면 run 내부에서만 선택적으로 쓰고, queue/status는 항상 lead agent 한 명만 갱신합니다.
 
 ## License
 

@@ -7,8 +7,8 @@ Forge v2 assumes long-horizon runs succeed because the operating structure is st
 Keep the stable target in files:
 - `docs/prompt.md` freezes goals, constraints, deliverables, and validation hooks
 - `docs/plans.md` defines the active milestone and its checks
-- `docs/implement.md` is the runbook
 - `docs/documentation.md` is shared memory + audit log
+- optional support docs such as `docs/architecture.md` and `docs/backlog.md` carry durable detail
 
 If a future agent cannot re-read the decision, it is not durable enough.
 
@@ -42,8 +42,17 @@ Long-horizon work still needs checkpoints:
 ## 6. Isolate long runs
 
 Use worktrees, isolated state, and per-run metadata so a long autonomous run does not thrash the main working copy.
+Approved work must still land back on the main branch before the milestone is considered closed.
 
-## 7. Docs must stay editable
+## 7. Parallelism needs one writer
+
+Selective parallelism is useful inside a run, but only if coordination stays simple.
+- one lead agent owns queue/status/checkpoint/landing
+- helper workers should be read-only or have clearly disjoint owned paths
+- if ownership is unclear, stay serial
+- parallel work should leave an observable ledger so humans can verify it actually happened
+
+## 8. Docs must stay editable
 
 Humans will review and tweak docs between runs.
 - keep files short

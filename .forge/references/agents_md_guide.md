@@ -7,8 +7,8 @@ Forge v2 AGENTS.md is a compact table of contents, not a wall of prose.
 Point outward:
 - `docs/prompt.md`
 - `docs/plans.md`
-- `docs/implement.md`
 - `docs/documentation.md`
+- `docs/backlog.md` when follow-up scope matters
 
 Do not inline architecture or long product explanations.
 
@@ -20,6 +20,8 @@ Good examples:
 - run `./forge qa` before leaving a session
 - append notes to `docs/documentation.md`
 - never run `git commit`
+- never weaken or delete tests to hide failures
+- allow existing tests to change only when behavior changed or the test is incorrect/flaky
 
 Bad examples:
 - “Write good code”
@@ -31,6 +33,6 @@ Bad examples:
 Prefer:
 1. Run `./forge status`
 2. Read durable docs
-3. Work from `.forge/state/current/queue.json`
+3. Work from `.forge/state/current/queue.json`, but feel free to batch a small available task slice when it stays reviewable
 
 Avoid pointing agents at hidden internal scripts unless that is the only safe entrypoint.

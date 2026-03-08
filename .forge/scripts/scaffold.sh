@@ -23,11 +23,6 @@ if [ ! -f "docs/prompt.md" ]; then
   exit 1
 fi
 
-if [ ! -f "docs/implement.md" ]; then
-  echo "Error: docs/implement.md not found. Forge v2 requires implement.md before scaffold." >&2
-  exit 1
-fi
-
 ORIGIN_URL="$(git remote get-url origin 2>/dev/null || echo "")"
 if echo "$ORIGIN_URL" | grep -qE 'kisuya/co-forge(\.git)?$'; then
   echo ""
@@ -47,7 +42,7 @@ if echo "$ORIGIN_URL" | grep -qE 'kisuya/co-forge(\.git)?$'; then
 fi
 
 echo "Creating runtime directories..."
-mkdir -p .claude/skills .agents/skills .forge/state/current .forge/runs .forge/worktrees .forge/sessions docs/projects tests
+mkdir -p .claude/skills .agents/skills .forge/state/current .forge/runs .forge/worktrees docs/projects tests
 
 if [ ! -d ".git" ]; then
   echo "Initializing git..."
@@ -114,14 +109,6 @@ _No machine status yet._
 EOF
 fi
 
-if [ ! -f "docs/user_scenarios.md" ]; then
-  cat > docs/user_scenarios.md <<'EOF'
-# User Scenarios
-
-Document the primary flow, edge cases, and resolved unknowns here.
-EOF
-fi
-
 echo "Generating runtime hooks from docs/prompt.md..."
 python3 "$SCRIPT_DIR/runtime.py" render-hook validate_static > .forge/scripts/validate_static.sh
 python3 "$SCRIPT_DIR/runtime.py" render-hook validate_surface > .forge/scripts/validate_surface.sh
@@ -140,7 +127,6 @@ required = [
     "# Forge v2 runtime state",
     ".forge/state/current/",
     ".forge/runs/",
-    ".forge/sessions/",
     ".forge/worktrees/",
     ".forge/run-context.json",
 ]
@@ -170,9 +156,7 @@ PASS=true
 [ -L ".agents/skills/forge-close" ] && echo "  ✓ .agents/skills/forge-close" || { echo "  ✗ .agents/skills/forge-close"; PASS=false; }
 [ -f "docs/prompt.md" ] && echo "  ✓ docs/prompt.md" || { echo "  ✗ docs/prompt.md"; PASS=false; }
 [ -f "docs/plans.md" ] && echo "  ✓ docs/plans.md" || { echo "  ✗ docs/plans.md"; PASS=false; }
-[ -f "docs/implement.md" ] && echo "  ✓ docs/implement.md" || { echo "  ✗ docs/implement.md"; PASS=false; }
 [ -f "docs/documentation.md" ] && echo "  ✓ docs/documentation.md" || { echo "  ✗ docs/documentation.md"; PASS=false; }
-[ -f "docs/user_scenarios.md" ] && echo "  ✓ docs/user_scenarios.md" || { echo "  ✗ docs/user_scenarios.md"; PASS=false; }
 grep -q ".forge/state/current/" .gitignore && echo "  ✓ runtime state ignored" || { echo "  ✗ runtime state ignore missing"; PASS=false; }
 
 if ./forge status >/dev/null 2>&1; then

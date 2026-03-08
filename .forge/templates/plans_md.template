@@ -13,6 +13,9 @@ status = "active"
 scope = [
   "{{MILESTONE_SCOPE_1}}"
 ]
+out_of_scope = [
+  "{{MILESTONE_OUT_OF_SCOPE_1}}"
+]
 acceptance = [
   "{{MILESTONE_ACCEPTANCE_1}}"
 ]
@@ -22,6 +25,12 @@ id = "{{TASK_ID_1}}"
 title = "{{TASK_TITLE_1}}"
 description = "{{TASK_DESCRIPTION_1}}"
 depends_on = []
+verification = [
+  "{{TASK_VERIFICATION_1}}"
+]
+artifacts = [
+  "{{TASK_ARTIFACT_1}}"
+]
 
 [validation]
 commands = [
@@ -32,8 +41,16 @@ smoke_scenarios = [
   "{{SMOKE_SCENARIO_1}}"
 ]
 stop_and_fix = true
+
+[[validation_matrix]]
+acceptance = "{{MILESTONE_ACCEPTANCE_1}}"
+verified_by = [
+  "{{VALIDATION_ARTIFACT_1}}"
+]
 ```
 
 ## Planning Notes
 - Keep diffs scoped to the active milestone.
 - Put deferred ideas into `docs/backlog.md`, not into hidden scope expansions.
+- Every acceptance item should map to one or more concrete tests or smoke checks.
+- Every task should say how completion is verified before it is marked done.

@@ -17,6 +17,18 @@ runtime_prepare = []
 runtime_doctor = []
 validate_static = []
 validate_surface = []
+
+[orchestration]
+default_agent = "codex"
+session_task_budget = 6
+
+[agents.codex]
+model = "gpt-5.4"
+# profile = "forge-long"
+
+[agents.claude]
+model = "claude-opus-4-6"
+effort = "high"
 ```
 
 ## Goals
@@ -33,6 +45,15 @@ validate_surface = []
 
 ## Done When
 {{DONE_WHEN}}
+
+## Quality Bar
+{{QUALITY_BAR}}
+
+## Primary Failure Modes
+{{PRIMARY_FAILURE_MODES}}
+
+## Required User Journeys
+{{REQUIRED_USER_JOURNEYS}}
 
 ## Demo Flow
 {{DEMO_FLOW}}
