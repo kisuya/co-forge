@@ -50,7 +50,7 @@ Everything in `.forge/scripts/` is a backend implementation detail.
 ## Runtime State
 
 Generated from docs:
-- `.forge/state/current/queue.json`
+- `.forge/state/current/queue.json` (thin execution state: task status/notes only)
 - `.forge/state/current/last_validation.json`
 
 Run isolation:
@@ -86,7 +86,7 @@ Humans still own:
 Agents own:
 - implementation inside the milestone
 - validation execution
-- queue status maintenance
+- queue status maintenance while leaving task definitions in `docs/plans.md`
 - documentation updates in allowed sections
 - batching a meaningful available task slice instead of forcing one tiny edit at a time
 - making measurable progress, which includes either reducing pending work or producing real task changes before checkpoint; documentation session-note churn alone does not count

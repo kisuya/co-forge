@@ -124,6 +124,28 @@ class ForgeSessionTest(unittest.TestCase):
                   progress)
                     printf 'progress\\n' >> milestone-output.txt
                     ;;
+                  complete)
+                    printf 'done\\n' > milestone-output.txt
+                    python3 - <<'PY'
+import json
+from pathlib import Path
+
+queue_path = Path('.forge/state/current/queue.json')
+queue = json.loads(queue_path.read_text(encoding='utf-8'))
+for task in queue.get('tasks', []):
+    task['status'] = 'done'
+    task['notes'] = f"completed by stub for {{task['id']}}"
+queue_path.write_text(json.dumps(queue, indent=2) + '\\n', encoding='utf-8')
+
+docs_path = Path('docs/documentation.md')
+content = docs_path.read_text(encoding='utf-8')
+marker = "## Session Notes\\n"
+note = "- Stub agent completed the milestone in the active worktree.\\n"
+if note not in content and marker in content:
+    content = content.replace(marker, marker + note, 1)
+docs_path.write_text(content, encoding='utf-8')
+PY
+                    ;;
                   notes)
                     printf '\\n- synthetic progress\\n' >> docs/documentation.md
                     ;;
@@ -278,7 +300,7 @@ class ForgeSessionTest(unittest.TestCase):
         run(["python3", ".forge/scripts/runtime.py", "sync"], self.project)
         updated = json.loads(queue_path.read_text(encoding="utf-8"))
         self.assertEqual(updated["tasks"][0]["status"], "pending")
-        self.assertEqual(updated["tasks"][0]["description"], "Second description.")
+        self.assertNotIn("description", updated["tasks"][0])
 
     def test_run_resumes_existing_worktree_by_default(self) -> None:
         prepared = run(
@@ -309,6 +331,99 @@ class ForgeSessionTest(unittest.TestCase):
         self.assertEqual(current["worktree_path"], prepared_payload["worktree_path"])
         self.assertEqual(current["status"], "idle")
         self.assertEqual(current["agent"], "claude")
+
+    def test_public_lifecycle_runs_in_worktree_and_lands_cleanly(self) -> None:
+        write_file(
+            self.project / "docs/prompt.md",
+            """
+            # Prompt
+
+            ```toml
+            [project]
+            name = "Lifecycle Project"
+            one_liner = "Exercise public forge lifecycle commands"
+
+            [user_surface]
+            kind = "cli"
+            entrypoint = "./forge"
+
+            [commands]
+            runtime_prepare = []
+            runtime_doctor = []
+            validate_static = ["test -f milestone-output.txt"]
+            validate_surface = ["grep -q '^done$' milestone-output.txt"]
+
+            [orchestration]
+            default_agent = "codex"
+            ```
+            """,
+        )
+        write_file(
+            self.project / "docs/plans.md",
+            """
+            # Plans
+
+            ```toml
+            type = "milestone"
+
+            [milestone]
+            id = "m1-public"
+            title = "Public lifecycle milestone"
+            goal = "Verify the public forge lifecycle end to end."
+            status = "active"
+            scope = ["Create one shipped artifact inside the run worktree"]
+            out_of_scope = ["Multiple milestones"]
+            acceptance = ["A public run can complete and land without mutating main before close"]
+
+            [[task]]
+            id = "task-ship"
+            title = "Create shipped artifact"
+            description = "Write milestone-output.txt from the active worktree and close the queue."
+            depends_on = []
+            verification = ["test -f milestone-output.txt"]
+            artifacts = ["milestone-output.txt"]
+
+            [validation]
+            commands = ["./.forge/scripts/validate_static.sh", "./.forge/scripts/validate_surface.sh"]
+            smoke_scenarios = ["A run writes the artifact in the isolated worktree, then land-current brings it back to main."]
+            stop_and_fix = true
+
+            [[validation_matrix]]
+            acceptance = "A public run can complete and land without mutating main before close"
+            verified_by = ["milestone-output.txt", "./.forge/scripts/validate_surface.sh"]
+            ```
+            """,
+        )
+        run(["./forge", "doctor"], self.project)
+        run(["python3", ".forge/scripts/runtime.py", "sync"], self.project)
+        run(["python3", ".forge/scripts/runtime.py", "snapshot-open"], self.project)
+
+        env = self.install_stub_codex("complete")
+        result = run(["./forge", "run", "codex", "--fresh"], self.project, env=env)
+        self.assertIn("Active milestone complete.", result.stdout)
+
+        current = json.loads((self.project / ".forge/runs/current.json").read_text(encoding="utf-8"))
+        self.assertEqual(current["status"], "milestone_complete")
+        worktree = Path(current["worktree_path"])
+        self.assertTrue((worktree / "milestone-output.txt").exists())
+        self.assertFalse((self.project / "milestone-output.txt").exists())
+
+        status = run(["./forge", "status"], self.project)
+        self.assertIn("Tasks: 1/1 done | 0 pending | 0 blocked | 0 available", status.stdout)
+        self.assertIn("Acceptance coverage: 1/1 mapped", status.stdout)
+        self.assertIn("Active run:", status.stdout)
+        self.assertIn("[milestone_complete]", status.stdout)
+
+        landed = run(["python3", ".forge/scripts/runtime.py", "land-current", "public-lifecycle"], self.project)
+        self.assertIn("Landed active run into", landed.stdout)
+        self.assertTrue((self.project / "milestone-output.txt").exists())
+        self.assertFalse(worktree.exists())
+        self.assertFalse((self.project / ".forge/runs/current.json").exists())
+        self.assertTrue((self.project / "docs/projects/public-lifecycle/state/queue.json").exists())
+        archived_queue = json.loads((self.project / "docs/projects/public-lifecycle/state/queue.json").read_text(encoding="utf-8"))
+        self.assertEqual(archived_queue["tasks"][0]["status"], "done")
+        branches = run(["git", "branch", "--list", "codex/run-*"], self.project)
+        self.assertEqual(branches.stdout.strip(), "")
 
     def test_run_executes_orchestrator_inside_worktree(self) -> None:
         self.write_active_plan()

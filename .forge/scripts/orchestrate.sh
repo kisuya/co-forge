@@ -81,7 +81,7 @@ Read the durable docs and operate as a long-horizon coding agent inside the acti
 ## Session Protocol
 1. Run: ./forge status
 2. Read AGENTS.md, docs/prompt.md, docs/plans.md, docs/documentation.md
-3. Read .forge/state/current/queue.json and choose one or more currently available tasks whose combined scope is still a tight, reviewable slice of the active milestone
+3. Read docs/plans.md for task definitions and .forge/state/current/queue.json for current status, then choose one or more currently available tasks whose combined scope is still a tight, reviewable slice of the active milestone
 4. Implement those tasks without expanding scope beyond the active milestone
 5. Update .forge/state/current/queue.json:
    - status="done" when each completed task is complete
@@ -124,7 +124,7 @@ $agents_doc
 $documentation_doc
 
 ## Derived Runtime State
-### queue.json
+### queue.json (execution state only)
 $queue_json
 
 ## Recent Commits

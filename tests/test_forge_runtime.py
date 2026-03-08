@@ -364,6 +364,95 @@ class ForgeRuntimeTest(unittest.TestCase):
         self.assertEqual(counter_file.read_text(encoding="utf-8"), "1")
         shutil.rmtree(counter_dir)
 
+    def test_sync_writes_thin_execution_queue(self) -> None:
+        write_file(
+            self.project / "docs/plans.md",
+            """
+            # Plans
+
+            ```toml
+            type = "milestone"
+
+            [milestone]
+            id = "m1"
+            title = "Thin queue"
+            goal = "Keep queue.json focused on execution state"
+            status = "active"
+            scope = ["scope"]
+            out_of_scope = ["out"]
+            acceptance = ["acceptance"]
+
+            [[task]]
+            id = "task-a"
+            title = "Task A"
+            description = "Task description."
+            depends_on = []
+            verification = ["Run static validation"]
+            artifacts = ["tests/test_a.py"]
+
+            [validation]
+            commands = ["./.forge/scripts/validate_static.sh"]
+            smoke_scenarios = ["docs exist"]
+            stop_and_fix = true
+
+            [[validation_matrix]]
+            acceptance = "acceptance"
+            verified_by = ["tests/test_a.py"]
+            ```
+            """,
+        )
+
+        run(["python3", ".forge/scripts/runtime.py", "sync"], self.project)
+        queue = json.loads((self.project / ".forge/state/current/queue.json").read_text(encoding="utf-8"))
+        self.assertEqual(queue["active_milestone_id"], "m1")
+        self.assertEqual(sorted(queue["tasks"][0].keys()), ["id", "notes", "priority", "signature", "status"])
+
+    def test_status_and_qa_show_acceptance_coverage(self) -> None:
+        write_file(
+            self.project / "docs/plans.md",
+            """
+            # Plans
+
+            ```toml
+            type = "milestone"
+
+            [milestone]
+            id = "m1"
+            title = "Coverage"
+            goal = "Expose acceptance coverage in status and qa"
+            status = "active"
+            scope = ["scope"]
+            out_of_scope = ["out"]
+            acceptance = ["Users can complete the main flow"]
+
+            [[task]]
+            id = "task-a"
+            title = "Task A"
+            description = "Task description."
+            depends_on = []
+            verification = ["Run static validation"]
+            artifacts = ["tests/test_a.py"]
+
+            [validation]
+            commands = ["./.forge/scripts/validate_static.sh", "./.forge/scripts/validate_surface.sh"]
+            smoke_scenarios = ["docs exist"]
+            stop_and_fix = true
+
+            [[validation_matrix]]
+            acceptance = "Users can complete the main flow"
+            verified_by = ["tests/test_a.py", "./.forge/scripts/validate_surface.sh"]
+            ```
+            """,
+        )
+
+        status = run(["./forge", "status"], self.project)
+        self.assertIn("Acceptance coverage: 1/1 mapped", status.stdout)
+        self.assertIn("Users can complete the main flow <= tests/test_a.py, ./.forge/scripts/validate_surface.sh", status.stdout)
+
+        qa = run(["python3", ".forge/scripts/runtime.py", "qa"], self.project)
+        self.assertIn("Acceptance coverage: 1/1 mapped", qa.stdout)
+        self.assertIn("Users can complete the main flow <= tests/test_a.py, ./.forge/scripts/validate_surface.sh", qa.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

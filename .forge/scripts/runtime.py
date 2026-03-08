@@ -559,6 +559,38 @@ def parse_plans(root: Path) -> dict[str, Any]:
     return {"path": str(path.relative_to(root)), "hash": sha256(path), "milestones": milestones}
 
 
+def active_milestone_from_plans(plans: dict[str, Any]) -> dict[str, Any] | None:
+    return next((milestone for milestone in plans["milestones"] if milestone["status"] == "active"), None)
+
+
+def queue_active_milestone_id(queue: dict[str, Any]) -> str | None:
+    milestone_id = queue.get("active_milestone_id")
+    if isinstance(milestone_id, str) and milestone_id:
+        return milestone_id
+    legacy = queue.get("active_milestone")
+    if isinstance(legacy, dict):
+        legacy_id = legacy.get("id")
+        if isinstance(legacy_id, str) and legacy_id:
+            return legacy_id
+    return None
+
+
+def acceptance_coverage_summary(milestone: dict[str, Any] | None) -> dict[str, Any]:
+    if not milestone:
+        return {"total": 0, "mapped": 0, "entries": []}
+    acceptance_items = list(milestone.get("acceptance") or [])
+    matrix = list((milestone.get("validation") or {}).get("matrix") or [])
+    entries: list[dict[str, Any]] = []
+    for acceptance in acceptance_items:
+        verified_by: list[str] = []
+        for item in matrix:
+            if item.get("acceptance") == acceptance:
+                verified_by.extend(item.get("verified_by") or [])
+        entries.append({"acceptance": acceptance, "verified_by": verified_by})
+    mapped = sum(1 for entry in entries if entry["verified_by"])
+    return {"total": len(entries), "mapped": mapped, "entries": entries}
+
+
 def sync_state(root: Path) -> dict[str, Any]:
     prompt = parse_prompt(root)
     plans = parse_plans(root)
@@ -569,12 +601,11 @@ def sync_state(root: Path) -> dict[str, Any]:
         for task in existing_queue.get("tasks", [])
         if isinstance(task, dict) and isinstance(task.get("id"), str)
     }
-    milestones = plans["milestones"]
-    active = next((milestone for milestone in milestones if milestone["status"] == "active"), None)
+    active = active_milestone_from_plans(plans)
     if active is None:
         queue_payload = {
             "project": prompt["project"]["name"],
-            "active_milestone": None,
+            "active_milestone_id": None,
             "tasks": [],
             "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -590,7 +621,7 @@ def sync_state(root: Path) -> dict[str, Any]:
     cycle = detect_dependency_cycle(active["tasks"])
     if cycle:
         raise DocParseError(root / "docs/plans.md", f"Active milestone contains a dependency cycle: {' -> '.join(cycle)}.", line=active["line"])
-    previous_milestone_id = ((existing_queue.get("active_milestone") or {}).get("id"))
+    previous_milestone_id = queue_active_milestone_id(existing_queue)
     merged_tasks: list[dict[str, Any]] = []
     for index, task in enumerate(active["tasks"], start=1):
         previous = existing_tasks.get(task["id"], {})
@@ -605,11 +636,6 @@ def sync_state(root: Path) -> dict[str, Any]:
         merged_tasks.append(
             {
                 "id": task["id"],
-                "title": task["title"],
-                "description": task["description"],
-                "depends_on": task["depends_on"],
-                "verification": task["verification"],
-                "artifacts": task["artifacts"],
                 "status": status,
                 "notes": notes,
                 "signature": signature,
@@ -618,15 +644,7 @@ def sync_state(root: Path) -> dict[str, Any]:
         )
     queue_payload = {
         "project": prompt["project"]["name"],
-        "active_milestone": {
-            "id": active["id"],
-            "title": active["title"],
-            "goal": active["goal"],
-            "scope": active["scope"],
-            "out_of_scope": active["out_of_scope"],
-            "acceptance": active["acceptance"],
-            "validation": active["validation"],
-        },
+        "active_milestone_id": active["id"],
         "tasks": merged_tasks,
         "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -639,26 +657,51 @@ def ensure_synced(root: Path) -> dict[str, Any]:
 
 
 def queue_stats(root: Path) -> dict[str, Any]:
+    plans = parse_plans(root)
+    active = active_milestone_from_plans(plans)
     queue = load_json(root / QUEUE_PATH, default={}) or {}
-    tasks = queue.get("tasks", [])
-    done = sum(1 for task in tasks if task.get("status") == "done")
-    blocked = sum(1 for task in tasks if task.get("status") == "blocked")
-    pending = sum(1 for task in tasks if task.get("status") == "pending")
-    task_map = {task["id"]: task for task in tasks if isinstance(task, dict) and isinstance(task.get("id"), str)}
+    queue_tasks = {
+        task["id"]: task
+        for task in queue.get("tasks", [])
+        if isinstance(task, dict) and isinstance(task.get("id"), str)
+    }
+    plan_tasks = list(active.get("tasks") or []) if active else []
+    task_states: list[dict[str, Any]] = []
+    for task in plan_tasks:
+        state = queue_tasks.get(task["id"], {})
+        task_states.append(
+            {
+                "id": task["id"],
+                "title": task["title"],
+                "description": task["description"],
+                "depends_on": task["depends_on"],
+                "verification": task["verification"],
+                "artifacts": task["artifacts"],
+                "status": state.get("status", "pending") if state.get("status") in TASK_STATUSES else "pending",
+                "notes": state.get("notes", "") if isinstance(state.get("notes"), str) else "",
+                "signature": state.get("signature"),
+                "priority": state.get("priority"),
+            }
+        )
+    done = sum(1 for task in task_states if task.get("status") == "done")
+    blocked = sum(1 for task in task_states if task.get("status") == "blocked")
+    pending = sum(1 for task in task_states if task.get("status") == "pending")
+    task_map = {task["id"]: task for task in task_states}
     available = 0
-    for task in tasks:
+    for task in task_states:
         if task.get("status") != "pending":
             continue
         deps = task.get("depends_on", [])
         if all(task_map.get(dep, {}).get("status") == "done" for dep in deps):
             available += 1
     return {
-        "total": len(tasks),
+        "total": len(task_states),
         "done": done,
         "blocked": blocked,
         "pending": pending,
         "available": available,
-        "active_milestone": queue.get("active_milestone"),
+        "active_milestone": active,
+        "tasks": task_states,
     }
 
 
@@ -950,12 +993,14 @@ def render_status_block(root: Path, qa_result: dict[str, Any] | None = None) -> 
     if validation_report:
         validation_status = validation_report.get("status", "unknown")
         validation_time = validation_report.get("finished_at", "-")
+    coverage = acceptance_coverage_summary(milestone)
     lines = [
         "## Machine Status",
         f"- Queue updated: {queue.get('updated_at', 'unknown')}",
         f"- Active milestone: {milestone_label}",
         f"- Tasks: {stats['done']}/{stats['total']} done, {stats['pending']} pending, {stats['blocked']} blocked, {stats['available']} available",
         f"- Last QA: {validation_status} at {validation_time}",
+        f"- Acceptance coverage: {coverage['mapped']}/{coverage['total']} mapped",
         f"- Active run: {run_summary}",
     ]
     if worker_summary and worker_summary.get("workers_used", 0) > 0:
@@ -1055,7 +1100,7 @@ def workspace_fingerprint(root: Path) -> str:
 
 def run_qa(root: Path, *, reuse_pass: bool = False) -> dict[str, Any]:
     synced = ensure_synced(root)
-    active = synced["queue"].get("active_milestone") or {}
+    active = synced["active"] or {}
     validation = active.get("validation") or {}
     commands = validation.get("commands") or ["./.forge/scripts/validate_static.sh", "./.forge/scripts/validate_surface.sh"]
     fingerprint = workspace_fingerprint(root)
@@ -1072,6 +1117,7 @@ def run_qa(root: Path, *, reuse_pass: bool = False) -> dict[str, Any]:
         "finished_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "workspace_fingerprint": fingerprint,
         "reused": False,
+        "acceptance_coverage": acceptance_coverage_summary(active),
         "commands": results,
     }
     write_json(root / VALIDATION_REPORT_PATH, report)
@@ -1305,7 +1351,7 @@ def command_sync(args: argparse.Namespace) -> int:
     root, _ = repo_context(Path.cwd())
     result = sync_state(root)
     update_documentation_status(root)
-    active = result["queue"].get("active_milestone")
+    active = result["active"]
     if active:
         print(f"Synced active milestone {active['id']} ({len(result['queue']['tasks'])} tasks).")
     else:
@@ -1326,6 +1372,7 @@ def command_status(args: argparse.Namespace) -> int:
         milestone = stats["active_milestone"]
         milestone_label = milestone["id"] if milestone else "none"
         qa = report["status"] if report else "not-run"
+        coverage = acceptance_coverage_summary(milestone)
         print(
             json.dumps(
                 {
@@ -1337,6 +1384,7 @@ def command_status(args: argparse.Namespace) -> int:
                     "available": stats["available"],
                     "last_qa": qa,
                     "queue_updated_at": queue.get("updated_at"),
+                    "acceptance_coverage": coverage,
                     "default_agent": default_agent,
                     "active_run": current,
                     "worker_summary": worker_summary,
@@ -1353,10 +1401,15 @@ def command_status(args: argparse.Namespace) -> int:
         print(f"Goal: {milestone['goal']}")
     else:
         print("Milestone: none")
+    coverage = acceptance_coverage_summary(milestone)
     print(
         f"Tasks: {stats['done']}/{stats['total']} done | "
         f"{stats['pending']} pending | {stats['blocked']} blocked | {stats['available']} available"
     )
+    print(f"Acceptance coverage: {coverage['mapped']}/{coverage['total']} mapped")
+    for entry in coverage["entries"]:
+        mapped = ", ".join(entry["verified_by"])
+        print(f"- {entry['acceptance']} <= {mapped}")
     if report:
         print(f"Last QA: {report['status']} at {report['finished_at']}")
     else:
@@ -1457,6 +1510,11 @@ def command_qa(args: argparse.Namespace) -> int:
     for item in report["commands"]:
         status = "PASS" if item["exit_code"] == 0 else f"FAIL({item['exit_code']})"
         print(f"- {status} {item['command']}")
+    coverage = report.get("acceptance_coverage") or {"mapped": 0, "total": 0, "entries": []}
+    print(f"Acceptance coverage: {coverage['mapped']}/{coverage['total']} mapped")
+    for entry in coverage.get("entries", []):
+        mapped = ", ".join(entry.get("verified_by") or [])
+        print(f"- {entry['acceptance']} <= {mapped}")
     return 0 if report["status"] == "pass" else 1
 
 

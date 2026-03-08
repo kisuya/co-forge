@@ -16,7 +16,7 @@ Do not inline architecture or long product explanations.
 
 Good examples:
 - `docs/plans.md` active milestone is the scope boundary
-- update only `.forge/state/current/queue.json` task statuses
+- use `docs/plans.md` for task definitions and update only `.forge/state/current/queue.json` task status/notes
 - run `./forge qa` before leaving a session
 - append notes to `docs/documentation.md`
 - never run `git commit`
@@ -33,6 +33,6 @@ Bad examples:
 Prefer:
 1. Run `./forge status`
 2. Read durable docs
-3. Work from `.forge/state/current/queue.json`, but feel free to batch a small available task slice when it stays reviewable
+3. Use `docs/plans.md` for task definitions and `.forge/state/current/queue.json` for current status, then batch a small available task slice when it stays reviewable
 
 Avoid pointing agents at hidden internal scripts unless that is the only safe entrypoint.

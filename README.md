@@ -48,7 +48,7 @@ co-forge/
 │   ├── scripts/                       ← tracked Forge runtime implementation
 │   ├── templates/                     ← tracked document templates
 │   ├── references/                    ← tracked guidance/reference docs
-│   ├── state/current/                 ← active milestone queue + last QA (gitignore)
+│   ├── state/current/                 ← thin execution state (task status/notes + last QA) (gitignore)
 │   ├── runs/                          ← shell run 메타데이터 (gitignore)
 │   └── worktrees/                     ← 격리 실행 공간 (gitignore)
 ├── docs/
@@ -120,7 +120,7 @@ co-forge/
 
 Forge v2-lite는 run resume를 기본 동작으로 둡니다.
 
-- `./forge status`는 active milestone, last QA, active run을 보여줍니다.
+- `./forge status`는 active milestone, acceptance coverage, last QA, active run을 보여줍니다.
 - sub-agent/team 병렬화를 썼다면 worker summary도 같이 보여줍니다.
 - `./forge run`은 resumable run이 있으면 기본 resume합니다.
 - `/forge-close`는 archive 대신 defer를 선택할 수 있습니다.
@@ -129,6 +129,7 @@ Forge v2-lite는 run resume를 기본 동작으로 둡니다.
 
 - `./forge run [claude|codex] [--resume|--fresh]` : active run resume 또는 새 isolated run 시작
 - `./forge status` : active run, milestone, queue, QA 상태 표시
+- `./forge status`와 `./forge qa`는 acceptance coverage를 함께 요약해 줍니다.
 - `./forge doctor` : prerequisites / validation hook / docs sync 상태 점검
 - `./forge upgrade` : 최신 Forge 하니스 반영
 
