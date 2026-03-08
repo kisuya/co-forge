@@ -432,6 +432,76 @@ class ForgeRuntimeTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Install at least one supported agent CLI", result.stdout)
 
+    def test_doctor_requires_npx_for_selected_playwright_mcp(self) -> None:
+        write_file(
+            self.project / "docs/prompt.md",
+            """
+            # Prompt
+
+            ```toml
+            [project]
+            name = "Smoke Project"
+            one_liner = "Validate MCP doctor checks"
+
+            [user_surface]
+            kind = "web"
+            entrypoint = "http://localhost:3000"
+
+            [commands]
+            runtime_prepare = []
+            runtime_doctor = []
+            validate_static = ["test -f docs/plans.md"]
+            validate_surface = ["test -f docs/documentation.md"]
+
+            [orchestration]
+            run_mcps = ["playwright"]
+
+            [agents.codex]
+            model = "gpt-5.4"
+            ```
+            """,
+        )
+        env = self.isolated_path_env(include_codex=True)
+        result = run(["./forge", "doctor"], self.project, check=False, env=env)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("playwright MCP launcher (npx): missing", result.stdout)
+        self.assertIn("run_mcps includes 'playwright' but 'npx' is not available.", result.stdout)
+
+    def test_doctor_accepts_remote_docs_mcp_without_extra_binary(self) -> None:
+        write_file(
+            self.project / "docs/prompt.md",
+            """
+            # Prompt
+
+            ```toml
+            [project]
+            name = "Smoke Project"
+            one_liner = "Validate MCP doctor checks"
+
+            [user_surface]
+            kind = "api"
+            entrypoint = "http://localhost:8000"
+
+            [commands]
+            runtime_prepare = []
+            runtime_doctor = []
+            validate_static = ["test -f docs/plans.md"]
+            validate_surface = ["test -f docs/documentation.md"]
+
+            [orchestration]
+            run_mcps = ["openaiDeveloperDocs"]
+
+            [agents.codex]
+            model = "gpt-5.4"
+            ```
+            """,
+        )
+        env = self.isolated_path_env(include_codex=True)
+        result = run(["./forge", "doctor"], self.project, env=env)
+        self.assertIn("run MCP allowlist: openaiDeveloperDocs", result.stdout)
+        self.assertIn("openaiDeveloperDocs MCP: remote endpoint configured", result.stdout)
+        self.assertIn("All checks passed.", result.stdout)
+
     def test_run_prepares_worktree_and_archive_must_happen_there(self) -> None:
         run_result = run(["./forge", "run", "codex"], self.project)
         self.assertIn("No active milestone. Run forge-open first.", run_result.stdout)

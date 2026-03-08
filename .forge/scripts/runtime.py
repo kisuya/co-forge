@@ -655,6 +655,25 @@ def run_mcp_config_for_agent(root: Path, agent: str) -> dict[str, Any]:
     return {"agent": agent, "allowed": allowed, "config": config}
 
 
+def validate_run_mcp_requirements(prompt: dict[str, Any]) -> tuple[list[str], list[str]]:
+    checks: list[str] = []
+    failures: list[str] = []
+    allowed = prompt["orchestration"].get("run_mcps") or []
+    if not allowed:
+        checks.append("run MCP allowlist: none (lean run)")
+        return checks, failures
+    checks.append("run MCP allowlist: " + ", ".join(allowed))
+    for name in allowed:
+        if name == "playwright":
+            npx_ok = bool(shutil.which("npx"))
+            checks.append(f"playwright MCP launcher (npx): {'ok' if npx_ok else 'missing'}")
+            if not npx_ok:
+                failures.append("run_mcps includes 'playwright' but 'npx' is not available.")
+        elif name == "openaiDeveloperDocs":
+            checks.append("openaiDeveloperDocs MCP: remote endpoint configured")
+    return checks, failures
+
+
 def sync_state(root: Path) -> dict[str, Any]:
     prompt = parse_prompt(root)
     plans = parse_plans(root)
@@ -1679,6 +1698,9 @@ def command_doctor(args: argparse.Namespace) -> int:
                 checks.append(f"default run agent: {default_agent}")
         else:
             checks.append("default run agent: none")
+        mcp_checks, mcp_failures = validate_run_mcp_requirements(prompt)
+        checks.extend(mcp_checks)
+        failures.extend(mcp_failures)
     for script_name in ("validate_static.sh", "validate_surface.sh", "prepare_runtime.sh"):
         script_path = root / ".forge/scripts" / script_name
         if not script_path.exists():
