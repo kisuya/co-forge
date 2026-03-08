@@ -1,0 +1,12 @@
+# User Scenarios
+
+Describe the product the way a user experiences it. Keep each scenario step-by-step and concrete.
+
+## Primary Scenario
+{{PRIMARY_SCENARIO}}
+
+## Edge Cases
+{{EDGE_CASES}}
+
+## Open Questions Resolved
+{{RESOLVED_QUESTIONS}}

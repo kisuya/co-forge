@@ -1,0 +1,112 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+RUNTIME_PY="$SCRIPT_DIR/runtime.py"
+
+json_field() {
+  local key="$1"
+  python3 -c "import json,sys; print(json.load(sys.stdin)[\"$key\"])"
+}
+
+current_worktree_path() {
+  if [ -f ".forge/runs/current.json" ]; then
+    python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path(".forge/runs/current.json")
+if path.exists():
+    data = json.loads(path.read_text())
+    print(data.get("worktree_path", ""))
+PY
+  fi
+}
+
+proxy_into_active_worktree() {
+  local cmd="$1"
+  shift
+  local worktree
+  worktree="$(current_worktree_path)"
+  if [ -n "$worktree" ] && [ -d "$worktree" ] && [ ! -f ".forge/run-context.json" ]; then
+    (cd "$worktree" && ./forge "$cmd" "$@")
+    exit $?
+  fi
+}
+
+cmd="${1:-}"
+if [ -z "$cmd" ]; then
+  cat <<'EOF'
+Usage: ./forge <run|status|doctor|upgrade> [args]
+Advanced: ./forge qa, ./forge archive <name>
+EOF
+  exit 1
+fi
+shift
+
+case "$cmd" in
+  status)
+    proxy_into_active_worktree status "$@"
+    exec python3 "$RUNTIME_PY" status "$@"
+    ;;
+  doctor)
+    exec python3 "$RUNTIME_PY" doctor "$@"
+    ;;
+  qa)
+    proxy_into_active_worktree qa "$@"
+    exec python3 "$RUNTIME_PY" qa "$@"
+    ;;
+  archive)
+    exec python3 "$RUNTIME_PY" archive "$@"
+    ;;
+  upgrade)
+    exec "$SCRIPT_DIR/upgrade.sh" "$@"
+    ;;
+  run)
+    agent="codex"
+    mode="auto"
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        claude|codex)
+          agent="$1"
+          ;;
+        --resume)
+          mode="resume"
+          ;;
+        --fresh)
+          mode="fresh"
+          ;;
+        *)
+          echo "Usage: ./forge run [claude|codex] [--resume|--fresh]" >&2
+          exit 1
+          ;;
+      esac
+      shift
+    done
+    if [ -f ".forge/run-context.json" ]; then
+      exec "$SCRIPT_DIR/orchestrate.sh" "$agent"
+    fi
+    export FORGE_MAIN_ROOT="$(pwd)"
+    if [ "$mode" != "fresh" ]; then
+      if resume_json="$(python3 "$RUNTIME_PY" run-resume-info 2>/dev/null)"; then
+        worktree="$(printf '%s' "$resume_json" | json_field worktree_path)"
+        run_id="$(printf '%s' "$resume_json" | json_field run_id)"
+        export FORGE_RUN_ID="$run_id"
+        exec "$worktree/.forge/scripts/orchestrate.sh" "$agent"
+      fi
+      if [ "$mode" = "resume" ]; then
+        echo "forge: No resumable run." >&2
+        exit 1
+      fi
+    fi
+    prepare_json="$(python3 "$RUNTIME_PY" prepare-run "$agent")"
+    worktree="$(printf '%s' "$prepare_json" | json_field worktree_path)"
+    run_id="$(printf '%s' "$prepare_json" | json_field run_id)"
+    export FORGE_RUN_ID="$run_id"
+    exec "$worktree/.forge/scripts/orchestrate.sh" "$agent"
+    ;;
+  *)
+    echo "Unknown forge command: $cmd" >&2
+    exit 1
+    ;;
+esac

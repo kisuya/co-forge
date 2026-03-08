@@ -1,0 +1,38 @@
+# Prompt
+
+Freeze the target here. Keep the TOML block machine-readable and the prose sections short.
+
+```toml
+[project]
+name = "{{PROJECT_NAME}}"
+one_liner = "{{PROJECT_ONE_LINER}}"
+
+[user_surface]
+kind = "{{USER_SURFACE_KIND}}"
+entrypoint = "{{USER_SURFACE_ENTRYPOINT}}"
+notes = "{{USER_SURFACE_NOTES}}"
+
+[commands]
+runtime_prepare = []
+runtime_doctor = []
+validate_static = []
+validate_surface = []
+```
+
+## Goals
+{{GOALS}}
+
+## Non-Goals
+{{NON_GOALS}}
+
+## Hard Constraints
+{{HARD_CONSTRAINTS}}
+
+## Deliverables
+{{DELIVERABLES}}
+
+## Done When
+{{DONE_WHEN}}
+
+## Demo Flow
+{{DEMO_FLOW}}

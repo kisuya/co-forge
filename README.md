@@ -1,124 +1,142 @@
 # co-forge
 
-AI와 함께 코드를 만드는 작업장.
+AI와 함께 장기 자율 코딩을 굴리기 위한 하니스 템플릿.
 
-자율 코딩 에이전트(Claude Code, Codex)를 위한 개발 하니스입니다. 사람이 **무엇을(WHAT)** 결정하고, AI가 **어떻게(HOW)** 실행하며, 사람이 **왜(WHY)** 회고합니다.
+Forge v2는 채팅 phase와 shell phase를 분리합니다.
+
+- chat-native HITL phase: `/forge-init`, `/forge-open`, `/forge-close`
+- shell-native execution phase: `./forge run`
+- 관리 명령: `./forge status`, `./forge doctor`, `./forge upgrade`
+
+이전 구조는 현재 커밋에 `v1` 태그로 보존했고, 기본 브랜치는 v2만 설명합니다.
 
 ## Quick Start
 
 ```bash
-# 1. GitHub에서 "Use this template" 버튼으로 내 저장소 생성 (권장)
-#    https://github.com/kisuya/co-forge → "Use this template" → "Create a new repository"
-#    그 후 clone:
+# 1. 이 템플릿으로 새 저장소 생성 후 clone
 git clone https://github.com/YOU/YOUR-PROJECT.git my-project
 cd my-project
 
-# 또는 직접 clone (⚠ scaffold 시 origin 변경 안내가 나옵니다)
-# git clone https://github.com/kisuya/co-forge.git my-project
+# 2. 에이전트와 함께 초기화
+#    Claude Code         Codex
+> /forge-init           # $forge-init
 
-# 2. 에이전트에서 스킬 실행
-#    Claude Code              Codex
-> /forge-discover          # $forge-discover     아이디어 검증
-> /forge-define            # $forge-define       PRD + 아키텍처 + 하니스 설치
-> /forge-project           # $forge-project      첫 프로젝트 스코핑
+# 3. 다음 milestone 열기
+> /forge-open           # $forge-open
 
-# 3. 자율 코딩 실행
-./.forge/scripts/orchestrate.sh claude   # 또는 codex
+# 4. 자율 실행
+./forge run             # 기본 agent: codex
 
-# 3-1. 중지하려면
-#   같은 터미널:  Ctrl+C
-#   다른 터미널:  kill $(cat .forge/orchestrate.pid)
-
-# 4. 회고 후 다음 사이클
-> /forge-retro             # $forge-retro        프로젝트 회고
-> /forge-project           # $forge-project      다음 프로젝트
+# 5. 결과 리뷰 후 종결 또는 보류
+> /forge-close          # $forge-close
 ```
 
-## 구조
+반복 루프는 아래만 기억하면 됩니다.
 
+```text
+/forge-open -> ./forge run -> /forge-close
 ```
+
+## 핵심 구조
+
+```text
 co-forge/
-├── .claude/skills/                    ← 스킬 원본 (Claude Code용, 클론하면 바로 활성화)
-│   ├── forge-discover/                   아이디어 검증 + 시장 조사
-│   ├── forge-define/                     PRD + 아키텍처 + 하니스 설치
-│   │   ├── scripts/                      scaffold.sh 외 5개 (런타임 스크립트 원본)
-│   │   └── templates/                    5개 (프로젝트 템플릿 원본)
-│   ├── forge-project/                    프로젝트 스코핑 + 백로그 정리
-│   └── forge-retro/                      프로젝트 회고
-│
-├── .agents/skills/                    ← Codex용 (symlink → .claude/skills/)
-│
-├── .forge/                            ← 런타임 (scaffold.sh가 생성)
-│   ├── scripts/                          init.sh, checkpoint.sh, orchestrate.sh, upgrade.sh, ...
-│   └── templates/                        spec_md, features_json, ...
-│
-├── AGENTS.md                          ← AI 에이전트 지침서
-├── docs/                              ← 제품 문서 + 프로젝트 상태
-│   ├── prd.md, architecture.md, conventions.md, tech_stack.md
-│   ├── backlog.md                        기능 발견 수집함
-│   └── projects/
-│       ├── current/                      활성 프로젝트 (spec.md, features.json, progress.txt)
-│       └── {archived}/                   완료된 프로젝트 + 회고록
-├── src/                               ← 제품 코드
-└── tests/                             ← 테스트
+├── forge                              ← 사용자 진입점
+├── .claude/skills/                    ← Claude용 chat-native phase skills
+├── .agents/skills/                    ← Codex용 skill symlink
+├── .forge/
+│   ├── scripts/                       ← tracked Forge runtime implementation
+│   ├── templates/                     ← tracked document templates
+│   ├── references/                    ← tracked guidance/reference docs
+│   ├── state/current/                 ← docs에서 파생된 실행 상태 (gitignore)
+│   ├── runs/                          ← shell run 메타데이터 (gitignore)
+│   ├── sessions/                      ← init/open/close phase 상태 (gitignore)
+│   └── worktrees/                     ← 격리 실행 공간 (gitignore)
+├── docs/
+│   ├── prompt.md                      ← 목표/제약/검증 훅
+│   ├── plans.md                       ← active milestone source of truth
+│   ├── implement.md                   ← 실행 규칙
+│   ├── documentation.md               ← shared memory + audit log
+│   ├── user_scenarios.md              ← step-by-step 사용자 시나리오
+│   ├── prd.md / architecture.md / conventions.md / tech_stack.md
+│   ├── backlog.md
+│   └── projects/                      ← archive snapshots
+└── tests/
 ```
 
-## 워크플로우
+이 템플릿으로 만든 실제 프로젝트도 `.claude/skills/`와 `.agents/skills/`를 그대로 유지합니다.
+`.claude`는 skill 전용이고, Forge의 tracked 구현과 runtime 상태는 모두 `.forge/` 아래에 둡니다.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  사람이 결정 (Interactive)                            │
-│  forge-project → 백로그 정리 → 스코프 결정            │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  AI가 실행 (Autonomous)                              │
-│  orchestrate.sh → 코딩 세션 → checkpoint.sh → 반복   │
-│  (에이전트가 새 기능 발견 시 → docs/backlog.md에 기록) │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  사람이 회고 (Interactive)                            │
-│  forge-retro → 교훈 정리 → AGENTS.md 개선            │
-└──────────────────────┬──────────────────────────────┘
-                       │
-                       └──→ 다음 forge-project (반복)
-```
+## 사용자 모델
 
-## 핵심 원칙
+### 1. `/forge-init`
 
-**토큰 효율성** — 기계적 작업(테스트 실행, 진행 기록, 디렉토리 생성)은 bash 스크립트가 처리합니다. AI 토큰은 판단이 필요한 작업에만 사용됩니다.
+최초 1회만 사용합니다.
 
-**교대 근무자 패턴** — 에이전트 세션은 들어와서 일하고 나갑니다. 하니스(.forge/)가 상태를 유지하고, 다음 에이전트에게 컨텍스트를 전달합니다.
+- 제품 아이디어를 사용자 시나리오 수준까지 선명하게 만듭니다.
+- durable docs를 작성합니다.
+- 사용자 리뷰를 거친 뒤 scaffold와 `./forge doctor`까지 실행합니다.
 
-**사람의 게이트** — 프로젝트 스코핑과 회고는 항상 사람이 참여합니다. 자율 코딩은 그 사이에서만 돌아갑니다.
+### 2. `/forge-open`
 
-## Git 추적 정책
+다음 milestone을 여는 HITL 세션입니다.
 
-| 경로 | 추적 | 이유 |
-|------|:----:|------|
-| `.claude/skills/` | O | 스킬 원본 |
-| `.agents/skills/` | O | Codex용 symlink → `.claude/skills/` |
-| `.forge/scripts/`, `.forge/templates/` | O | 팀이 동일한 인프라 공유 |
-| `docs/projects/{archived}/` | O | 완료된 프로젝트 이력 (팀 공유) |
-| `docs/projects/current/` | X | 활성 프로젝트 상태 (개발자별, .gitignore) |
-| `AGENTS.md`, `docs/` | O | 제품 문서 |
-| `src/`, `tests/` | O | 제품 코드 |
+- backlog와 이전 회고를 검토합니다.
+- 이번 milestone의 scope / acceptance / smoke scenario를 합의합니다.
+- `docs/plans.md`를 리뷰 후 확정합니다.
+- sync와 planning snapshot은 세션 내부에서 처리합니다.
 
-## 업그레이드
+### 3. `./forge run`
 
-템플릿이 업데이트되면 파생 프로젝트에서 하네스만 선택적으로 업데이트할 수 있습니다.
+실행 전용 단계입니다.
 
-```bash
-./.forge/scripts/upgrade.sh
-```
+- docs state를 sync합니다.
+- active worktree가 있으면 기본적으로 resume합니다.
+- resumable run이 없으면 새 isolated worktree를 엽니다.
 
-스킬, 스크립트, 템플릿이 최신 버전으로 갱신됩니다. 프로젝트 고유 파일(AGENTS.md, docs/, src/, tests/)은 건드리지 않습니다.
+추가 옵션:
 
-## 호환성
+- `./forge run --resume`
+- `./forge run --fresh`
+- `./forge run claude`
 
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — `.claude/skills/` (원본)
-- [Codex](https://openai.com/index/openai-codex/) — `.agents/skills/` (symlink, clone 즉시 활성화)
+### 4. `/forge-close`
+
+리뷰 우선 종결 세션입니다.
+
+- 결과, validation, 남은 리스크를 먼저 검토합니다.
+- 사람이 수정사항과 개선사항을 논의합니다.
+- retrospective / backlog / durable docs를 반영합니다.
+- 마지막 승인 후 archive합니다.
+- 아직 닫지 않으면 deferred 상태로 남기고 나중에 이어갈 수 있습니다.
+
+## Resume 모델
+
+Forge v2는 resume를 기본 동작으로 둡니다.
+
+- `./forge status`는 active phase session과 active run을 같이 보여줍니다.
+- `/forge-init`, `/forge-open`, `/forge-close`는 unfinished session을 감지하면 resume합니다.
+- `./forge run`은 resumable run이 있으면 기본 resume합니다.
+- `close`는 `deferred` 상태를 지원합니다.
+
+## 명령어
+
+- `./forge run [claude|codex] [--resume|--fresh]` : active run resume 또는 새 isolated run 시작
+- `./forge status` : active phase session, active run, milestone, QA 상태 표시
+- `./forge doctor` : prerequisites / validation hook / docs sync 상태 점검
+- `./forge upgrade` : 최신 Forge 하니스 반영
+
+고급/내부 명령:
+
+- `./forge qa`
+- `./forge archive <name>`
+
+## 설계 원칙
+
+- 사람 판단이 필요한 단계는 채팅에서 끝냅니다.
+- 기계적으로 오래 돌릴 단계만 shell로 뺍니다.
+- validation은 가능한 한 실제 사용자 표면에서 수행합니다.
+- 다음 milestone은 항상 사람이 다시 엽니다.
 
 ## License
 

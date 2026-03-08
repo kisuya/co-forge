@@ -1,0 +1,25 @@
+# Retrospective: {{PROJECT_NAME}}
+
+## Summary
+{{START_DATE}} → {{END_DATE}} | {{SESSION_COUNT}} sessions | {{TASKS_COMPLETED}} tasks completed
+
+## Goal
+{{GOAL}}
+
+## Completed Milestone
+{{ACTIVE_MILESTONE}}
+
+## Validation Outcome
+{{VALIDATION_SUMMARY}}
+
+## What Went Well
+- {{WENT_WELL}}
+
+## What Could Be Improved
+- {{COULD_IMPROVE}}
+
+## Durable Docs Changes
+- {{DOC_UPDATES}}
+
+## Lessons for Next Project
+- {{LESSONS}}

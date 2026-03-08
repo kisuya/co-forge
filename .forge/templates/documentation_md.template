@@ -1,0 +1,15 @@
+# Documentation
+
+{{FORGE_STATUS_BLOCK}}
+
+## Session Notes
+- Add short session summaries here.
+
+## Decisions
+- Record durable decisions and why they were made.
+
+## How To Run
+- Keep quick start and demo commands here.
+
+## Known Issues
+- Capture follow-ups that should survive agent sessions.

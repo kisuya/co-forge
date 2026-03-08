@@ -1,0 +1,38 @@
+# AGENTS.md
+
+## Project Overview
+{{PROJECT_OVERVIEW}}
+
+## Source Docs
+- docs/prompt.md
+- docs/plans.md
+- docs/implement.md
+- docs/documentation.md
+- docs/user_scenarios.md
+- docs/prd.md
+
+## Absolute Rules
+1. Never delete or modify existing tests in tests/
+2. If a test fails, fix the code — not the test
+3. Treat docs/plans.md active milestone as the scope boundary
+4. Update only .forge/state/current/queue.json task statuses — never open the next milestone yourself
+5. Run ./forge qa before finishing a session, and repair failures before exit
+6. Do NOT run git commit — checkpointing handles session commits
+7. Append durable discoveries to docs/backlog.md instead of expanding scope mid-run
+8. If a run was interrupted, resume via ./forge run --resume instead of opening a fresh milestone
+{{ADDITIONAL_RULES}}
+
+## Session Start Protocol
+1. Run: ./forge status
+2. Read output to understand current state
+3. Read docs/prompt.md, docs/plans.md, docs/implement.md, docs/documentation.md
+4. Pick the first available pending task from .forge/state/current/queue.json
+5. Implement, validate, and update queue status
+6. Add a short note under docs/documentation.md Session Notes
+
+## Project Context
+- Active queue: .forge/state/current/queue.json
+- Validation plan: .forge/state/current/validation.json
+- Phase sessions: .forge/sessions/
+- Archived projects: docs/projects/
+- Backlog: docs/backlog.md (append-only during coding)

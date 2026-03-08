@@ -1,0 +1,39 @@
+# Plans
+
+Keep milestones small enough to complete in one long-horizon loop. Exactly one milestone should be `status = "active"`.
+
+```toml
+type = "milestone"
+
+[milestone]
+id = "{{MILESTONE_ID}}"
+title = "{{MILESTONE_TITLE}}"
+goal = "{{MILESTONE_GOAL}}"
+status = "active"
+scope = [
+  "{{MILESTONE_SCOPE_1}}"
+]
+acceptance = [
+  "{{MILESTONE_ACCEPTANCE_1}}"
+]
+
+[[task]]
+id = "{{TASK_ID_1}}"
+title = "{{TASK_TITLE_1}}"
+description = "{{TASK_DESCRIPTION_1}}"
+depends_on = []
+
+[validation]
+commands = [
+  "./.forge/scripts/validate_static.sh",
+  "./.forge/scripts/validate_surface.sh"
+]
+smoke_scenarios = [
+  "{{SMOKE_SCENARIO_1}}"
+]
+stop_and_fix = true
+```
+
+## Planning Notes
+- Keep diffs scoped to the active milestone.
+- Put deferred ideas into `docs/backlog.md`, not into hidden scope expansions.

@@ -1,0 +1,17 @@
+# Implement
+
+This file is the runbook for autonomous sessions.
+
+## Rules
+- `docs/plans.md` active milestone is the source of truth.
+- Work only on tasks that appear in `.forge/state/current/queue.json`.
+- Keep diffs scoped. Do not open the next milestone yourself.
+- Run `./forge qa` after meaningful progress and before leaving.
+- If validation fails, repair before moving on.
+- Record durable notes in `docs/documentation.md`.
+- If blocked, mark the task blocked with notes and stop.
+
+## Review Checklist
+- Scope stayed inside the milestone.
+- Validation covered the real user surface.
+- Documentation is still readable to a human reviewer.

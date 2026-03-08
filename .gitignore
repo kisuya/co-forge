@@ -1,5 +1,9 @@
-# Forge: active project state (per-developer)
-docs/projects/current/
+# Forge v2 runtime state
+.forge/state/current/
+.forge/runs/
+.forge/sessions/
+.forge/worktrees/
+.forge/run-context.json
 
 # Common ignores
 node_modules/
