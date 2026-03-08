@@ -66,6 +66,7 @@ Work with the user to decide:
 - what this milestone achieves
 - what is explicitly out of scope
 - what commands and smoke scenarios must pass
+- whether any MCP is truly required for this milestone; keep `docs/prompt.md` `[orchestration].run_mcps` empty unless a concrete capability such as browser automation is needed
 
 Keep the milestone small enough for one long-horizon run window.
 

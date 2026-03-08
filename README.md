@@ -94,6 +94,8 @@ co-forge/
 - agent를 명시하지 않으면 설치된 baseline agent 중 사용 가능한 쪽을 자동 선택합니다.
 - preferred agent를 쓸 수 없으면 fallback agent를 명시적으로 알리고 실행합니다.
 - `docs/prompt.md`의 default agent, agent profile, orchestration budget이 실제 CLI 실행에 반영됩니다.
+- run은 기본적으로 lean prompt + lean MCP profile로 시작합니다. 세션 프롬프트에는 전체 문서 전문을 싣지 않고 brief만 넣고, agent가 필요한 파일을 직접 읽습니다.
+- `docs/prompt.md`의 `orchestration.run_mcps` 기본값은 `[]` 입니다. `playwright`나 `openaiDeveloperDocs` 같은 MCP는 milestone에 정말 필요할 때만 opt-in 합니다.
 - pending task 감소나 checkpoint 전 material change가 없으면 3 session 후 human review로 되돌립니다.
 - task는 verification 기준이 있을 때만 done으로 닫아야 합니다.
 - 필요하면 run 내부에서만 선택적으로 sub-agent/team 병렬화를 사용할 수 있고, `./forge status`에서 worker summary를 확인할 수 있습니다.

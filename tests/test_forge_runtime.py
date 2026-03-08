@@ -226,6 +226,128 @@ class ForgeRuntimeTest(unittest.TestCase):
         self.assertEqual(payload["model"], "claude-opus-4-6")
         self.assertEqual(payload["effort"], "high")
 
+    def test_session_brief_is_summary_not_full_doc_dump(self) -> None:
+        write_file(
+            self.project / "docs/plans.md",
+            """
+            # Plans
+
+            ```toml
+            type = "milestone"
+
+            [milestone]
+            id = "m1"
+            title = "Slim prompt"
+            goal = "Keep session prompts compact"
+            status = "active"
+            scope = ["scope one", "scope two"]
+            out_of_scope = ["scope three"]
+            acceptance = ["Users can finish the flow"]
+
+            [[task]]
+            id = "task-a"
+            title = "Task A"
+            description = "Task description."
+            depends_on = []
+            verification = ["Run static validation"]
+            artifacts = ["tests/test_a.py"]
+
+            [validation]
+            commands = ["./.forge/scripts/validate_static.sh"]
+            smoke_scenarios = ["docs exist"]
+            stop_and_fix = true
+
+            [[validation_matrix]]
+            acceptance = "Users can finish the flow"
+            verified_by = ["tests/test_a.py"]
+            ```
+            """,
+        )
+        write_file(
+            self.project / "docs/documentation.md",
+            """
+            # Documentation
+
+            <!-- forge:status:start -->
+            _No machine status yet._
+            <!-- forge:status:end -->
+
+            ## Session Notes
+            - note 1
+            - note 2
+            - note 3
+            - note 4
+
+            ## Decisions
+            - keep the UI server-rendered
+
+            ## Known Issues
+            - reminder delivery not built
+            """,
+        )
+        run(["python3", ".forge/scripts/runtime.py", "sync"], self.project)
+
+        result = run(["python3", ".forge/scripts/runtime.py", "session-brief"], self.project)
+        self.assertIn("Active milestone: m1 — Slim prompt", result.stdout)
+        self.assertIn("Available tasks:", result.stdout)
+        self.assertIn("Read these files directly", result.stdout)
+        self.assertNotIn('type = "milestone"', result.stdout)
+        self.assertNotIn("## Session Notes", result.stdout)
+
+    def test_run_mcp_config_defaults_to_empty(self) -> None:
+        codex = run(["python3", ".forge/scripts/runtime.py", "run-mcp-config", "codex"], self.project)
+        claude = run(["python3", ".forge/scripts/runtime.py", "run-mcp-config", "claude"], self.project)
+        codex_payload = json.loads(codex.stdout)
+        claude_payload = json.loads(claude.stdout)
+        self.assertEqual(codex_payload["allowed"], [])
+        self.assertEqual(codex_payload["config"], "mcp_servers={}")
+        self.assertEqual(claude_payload["allowed"], [])
+        self.assertEqual(json.loads(claude_payload["config"]), {"mcpServers": {}})
+
+    def test_run_mcp_config_can_opt_in_playwright(self) -> None:
+        write_file(
+            self.project / "docs/prompt.md",
+            """
+            # Prompt
+
+            ```toml
+            [project]
+            name = "Smoke Project"
+            one_liner = "Validate the Forge v2 runtime"
+
+            [user_surface]
+            kind = "cli"
+            entrypoint = "./forge"
+
+            [commands]
+            runtime_prepare = []
+            runtime_doctor = []
+            validate_static = ["test -f docs/plans.md"]
+            validate_surface = ["test -f docs/documentation.md"]
+
+            [orchestration]
+            run_mcps = ["playwright"]
+
+            [agents.codex]
+            model = "gpt-5.4"
+
+            [agents.claude]
+            model = "claude-opus-4-6"
+            effort = "high"
+            ```
+            """,
+        )
+        codex = run(["python3", ".forge/scripts/runtime.py", "run-mcp-config", "codex"], self.project)
+        claude = run(["python3", ".forge/scripts/runtime.py", "run-mcp-config", "claude"], self.project)
+        self.assertIn("playwright", codex.stdout)
+        self.assertIn("@playwright/mcp@latest", codex.stdout)
+        claude_payload = json.loads(claude.stdout)
+        self.assertEqual(claude_payload["allowed"], ["playwright"])
+        self.assertEqual(
+            json.loads(claude_payload["config"]),
+            {"mcpServers": {"playwright": {"command": "npx", "args": ["@playwright/mcp@latest"]}}},
+        )
+
     def test_plans_require_validation_matrix_for_each_acceptance(self) -> None:
         write_file(
             self.project / "docs/plans.md",

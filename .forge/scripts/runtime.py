@@ -49,6 +49,16 @@ WORKER_ROLES = {"explorer", "worker", "verifier"}
 WORKER_FINISH_STATUSES = {"success", "failed", "cancelled"}
 DEFAULT_SESSION_TASK_BUDGET = 6
 DEFAULT_AGENT = "codex"
+SUPPORTED_RUN_MCP_SERVERS = {
+    "playwright": {
+        "codex": {"command": "npx", "args": ["@playwright/mcp@latest"]},
+        "claude": {"command": "npx", "args": ["@playwright/mcp@latest"]},
+    },
+    "openaiDeveloperDocs": {
+        "codex": {"url": "https://developers.openai.com/mcp"},
+        "claude": {"url": "https://developers.openai.com/mcp"},
+    },
+}
 RUN_RELEVANT_DIRS = {
     ".forge",
     "api",
@@ -305,6 +315,24 @@ def ensure_optional_positive_int(value: Any, *, path: Path, line: int, label: st
     return value
 
 
+def ensure_optional_run_mcp_list(value: Any, *, path: Path, line: int, label: str) -> list[str]:
+    items = ensure_list_of_strings(value, path=path, line=line, label=label)
+    invalid = [item for item in items if item not in SUPPORTED_RUN_MCP_SERVERS]
+    if invalid:
+        raise DocParseError(
+            path,
+            f"{label} contains unsupported MCP server(s): {', '.join(invalid)}. Supported values: {', '.join(sorted(SUPPORTED_RUN_MCP_SERVERS))}.",
+            line=line,
+        )
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for item in items:
+        if item not in seen:
+            deduped.append(item)
+            seen.add(item)
+    return deduped
+
+
 def normalize_owned_path(path: str) -> str:
     normalized = path.strip().replace("\\", "/")
     while normalized.startswith("./"):
@@ -433,7 +461,13 @@ def parse_prompt(root: Path) -> dict[str, Any]:
                 line=blocks[0].start_line,
                 label="orchestration.session_task_budget",
             )
-            or DEFAULT_SESSION_TASK_BUDGET
+            or DEFAULT_SESSION_TASK_BUDGET,
+            "run_mcps": ensure_optional_run_mcp_list(
+                orchestration.get("run_mcps"),
+                path=path,
+                line=blocks[0].start_line,
+                label="orchestration.run_mcps",
+            ),
         },
     }
 
@@ -589,6 +623,36 @@ def acceptance_coverage_summary(milestone: dict[str, Any] | None) -> dict[str, A
         entries.append({"acceptance": acceptance, "verified_by": verified_by})
     mapped = sum(1 for entry in entries if entry["verified_by"])
     return {"total": len(entries), "mapped": mapped, "entries": entries}
+
+
+def toml_inline_literal(value: Any) -> str:
+    if isinstance(value, str):
+        return json.dumps(value)
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, list):
+        return "[" + ", ".join(toml_inline_literal(item) for item in value) + "]"
+    if isinstance(value, dict):
+        items = ", ".join(f"{key}={toml_inline_literal(item)}" for key, item in value.items())
+        return "{" + items + "}"
+    raise ForgeError(f"Cannot encode TOML literal for value type: {type(value).__name__}")
+
+
+def run_mcp_config_for_agent(root: Path, agent: str) -> dict[str, Any]:
+    prompt = parse_prompt(root)
+    allowed = prompt["orchestration"].get("run_mcps") or []
+    selected: dict[str, Any] = {}
+    for name in allowed:
+        selected[name] = SUPPORTED_RUN_MCP_SERVERS[name][agent]
+    if agent == "codex":
+        config = f"mcp_servers={toml_inline_literal(selected)}"
+    elif agent == "claude":
+        config = json.dumps({"mcpServers": selected}, separators=(",", ":"))
+    else:
+        raise ForgeError(f"Unsupported agent for MCP config: {agent}")
+    return {"agent": agent, "allowed": allowed, "config": config}
 
 
 def sync_state(root: Path) -> dict[str, Any]:
@@ -972,6 +1036,138 @@ def ensure_documentation_markers(root: Path) -> Path:
                 encoding="utf-8",
             )
     return path
+
+
+def markdown_section_lines(path: Path, heading: str) -> list[str]:
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="utf-8").splitlines()
+    target = f"## {heading}"
+    collecting = False
+    collected: list[str] = []
+    for line in lines:
+        if line.strip() == target:
+            collecting = True
+            continue
+        if collecting and line.startswith("## "):
+            break
+        if collecting:
+            collected.append(line.rstrip())
+    return collected
+
+
+def bullet_items(lines: list[str]) -> list[str]:
+    items: list[str] = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            items.append(stripped[2:].strip())
+    return [item for item in items if item]
+
+
+def session_brief_text(root: Path, *, recent_notes: int = 3, recent_commits: int = 2) -> str:
+    prompt = parse_prompt(root)
+    stats = queue_stats(root)
+    queue = load_json(root / QUEUE_PATH, default={}) or {}
+    report = load_json(root / VALIDATION_REPORT_PATH, default=None)
+    docs_path = ensure_documentation_markers(root)
+    notes = bullet_items(markdown_section_lines(docs_path, "Session Notes"))
+    decisions = bullet_items(markdown_section_lines(docs_path, "Decisions"))
+    known_issues = bullet_items(markdown_section_lines(docs_path, "Known Issues"))
+    milestone = stats["active_milestone"]
+    coverage = acceptance_coverage_summary(milestone)
+    recent_commit_lines = run(
+        ["git", "log", f"-{max(recent_commits, 0)}", "--oneline"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    ).stdout.splitlines()
+    lines = [
+        f"Project: {prompt['project']['name']} — {prompt['project']['one_liner']}",
+        f"User surface: {prompt['user_surface'].get('kind', 'unknown')} @ {prompt['user_surface'].get('entrypoint', '-')}",
+        f"Default agent: {prompt['orchestration'].get('default_agent', DEFAULT_AGENT)}",
+    ]
+    run_mcps = prompt["orchestration"].get("run_mcps") or []
+    if run_mcps:
+        lines.append("Run MCP allowlist: " + ", ".join(run_mcps))
+    else:
+        lines.append("Run MCP allowlist: none (lean run)")
+    if milestone:
+        lines.extend(
+            [
+                "",
+                f"Active milestone: {milestone['id']} — {milestone['title']}",
+                f"Goal: {milestone['goal']}",
+                "Scope:",
+            ]
+        )
+        lines.extend(f"- {item}" for item in (milestone.get("scope") or []))
+        out_of_scope = milestone.get("out_of_scope") or []
+        if out_of_scope:
+            lines.append("Out of scope:")
+            lines.extend(f"- {item}" for item in out_of_scope)
+        acceptance_entries = coverage.get("entries") or []
+        if acceptance_entries:
+            lines.append("Acceptance:")
+            for entry in acceptance_entries:
+                verified_by = ", ".join(entry.get("verified_by") or []) or "unmapped"
+                lines.append(f"- {entry['acceptance']} <= {verified_by}")
+    lines.extend(
+        [
+            "",
+            "Task state:",
+            f"- {stats['done']}/{stats['total']} done, {stats['pending']} pending, {stats['blocked']} blocked, {stats['available']} available",
+        ]
+    )
+    task_states = stats.get("tasks") or []
+    available_tasks = [task for task in task_states if task.get("status") == "pending" and all(
+        next((candidate.get("status") for candidate in task_states if candidate["id"] == dep), None) == "done"
+        for dep in task.get("depends_on", [])
+    )]
+    blocked_tasks = [task for task in task_states if task.get("status") == "blocked"]
+    if available_tasks:
+        lines.append("Available tasks:")
+        for task in available_tasks:
+            lines.append(f"- {task['id']}: {task['title']}")
+            lines.append(f"  verification: {', '.join(task.get('verification') or [])}")
+    if blocked_tasks:
+        lines.append("Blocked tasks:")
+        for task in blocked_tasks:
+            note = task.get("notes") or "no notes"
+            lines.append(f"- {task['id']}: {note}")
+    lines.append(f"Queue updated: {queue.get('updated_at', 'unknown')}")
+    if report:
+        lines.append(f"Last QA: {report.get('status', 'unknown')} at {report.get('finished_at', '-')}")
+    else:
+        lines.append("Last QA: not run")
+    if notes:
+        lines.append("")
+        lines.append(f"Recent session notes (last {min(len(notes), recent_notes)}):")
+        lines.extend(f"- {item}" for item in notes[-recent_notes:])
+    if decisions:
+        lines.append("")
+        lines.append("Durable decisions:")
+        lines.extend(f"- {item}" for item in decisions[-3:])
+    if known_issues:
+        lines.append("")
+        lines.append("Known issues:")
+        lines.extend(f"- {item}" for item in known_issues[-3:])
+    if recent_commit_lines:
+        lines.append("")
+        lines.append("Recent commits:")
+        lines.extend(f"- {item}" for item in recent_commit_lines)
+    lines.extend(
+        [
+            "",
+            "Read these files directly before making decisions:",
+            "- AGENTS.md",
+            "- docs/prompt.md",
+            "- docs/plans.md",
+            "- docs/documentation.md",
+            "- .forge/state/current/queue.json",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def render_status_block(root: Path, qa_result: dict[str, Any] | None = None) -> str:
@@ -1440,6 +1636,14 @@ def command_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_session_brief(args: argparse.Namespace) -> int:
+    root, _ = repo_context(Path.cwd())
+    ensure_synced(root)
+    brief = session_brief_text(root, recent_notes=args.recent_notes, recent_commits=args.recent_commits)
+    print(brief)
+    return 0
+
+
 def command_doctor(args: argparse.Namespace) -> int:
     root, _ = repo_context(Path.cwd())
     failures: list[str] = []
@@ -1640,6 +1844,24 @@ def command_preferred_agent(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_run_mcps(args: argparse.Namespace) -> int:
+    root, _ = repo_context(Path.cwd())
+    prompt = parse_prompt(root)
+    allowed = prompt["orchestration"].get("run_mcps") or []
+    if args.json:
+        print(json.dumps(allowed))
+    else:
+        for item in allowed:
+            print(item)
+    return 0
+
+
+def command_run_mcp_config(args: argparse.Namespace) -> int:
+    root, _ = repo_context(Path.cwd())
+    print(json.dumps(run_mcp_config_for_agent(root, args.agent)))
+    return 0
+
+
 def command_snapshot_open(args: argparse.Namespace) -> int:
     root, main_root = repo_context(Path.cwd())
     if root != main_root:
@@ -1813,6 +2035,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     status_parser = subparsers.add_parser("status")
     status_parser.add_argument("--brief", action="store_true")
+    session_brief = subparsers.add_parser("session-brief")
+    session_brief.add_argument("--recent-notes", type=int, default=3)
+    session_brief.add_argument("--recent-commits", type=int, default=2)
 
     subparsers.add_parser("doctor")
     qa_parser = subparsers.add_parser("qa")
@@ -1853,6 +2078,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     preferred_agent = subparsers.add_parser("preferred-agent")
     preferred_agent.add_argument("--json", action="store_true")
+    run_mcps = subparsers.add_parser("run-mcps")
+    run_mcps.add_argument("--json", action="store_true")
+    run_mcp_config = subparsers.add_parser("run-mcp-config")
+    run_mcp_config.add_argument("agent", choices=["codex", "claude"])
 
     orchestration_setting = subparsers.add_parser("orchestration-setting")
     orchestration_setting.add_argument("key", choices=["session_task_budget"])
@@ -1881,6 +2110,8 @@ def main() -> int:
             return command_sync(args)
         if args.command == "status":
             return command_status(args)
+        if args.command == "session-brief":
+            return command_session_brief(args)
         if args.command == "doctor":
             return command_doctor(args)
         if args.command == "qa":
@@ -1909,6 +2140,10 @@ def main() -> int:
             return command_agent_profile(args)
         if args.command == "preferred-agent":
             return command_preferred_agent(args)
+        if args.command == "run-mcps":
+            return command_run_mcps(args)
+        if args.command == "run-mcp-config":
+            return command_run_mcp_config(args)
         if args.command == "orchestration-setting":
             return command_orchestration_setting(args)
         if args.command == "worker-start":

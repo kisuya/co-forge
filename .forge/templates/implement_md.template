@@ -5,6 +5,8 @@ This file is the runbook for autonomous sessions.
 ## Rules
 - `docs/plans.md` active milestone is the source of truth.
 - Use `docs/plans.md` for task definitions and `.forge/state/current/queue.json` for execution state.
+- Treat the session prompt as a brief; read durable docs from disk before acting.
+- Assume the run starts with a lean MCP profile unless `docs/prompt.md` opts into specific MCPs.
 - Keep diffs scoped. Do not open the next milestone yourself.
 - Run `./forge qa` after meaningful progress and before leaving.
 - If validation fails, repair before moving on.

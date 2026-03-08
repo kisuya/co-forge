@@ -26,11 +26,16 @@
 ## Session Start Protocol
 1. Run: ./forge status
 2. Read output to understand current state
-3. Read AGENTS.md, docs/prompt.md, docs/plans.md, docs/documentation.md
+3. Treat the run prompt as a brief only; read AGENTS.md, docs/prompt.md, docs/plans.md, docs/documentation.md directly from disk before making decisions
 4. Use `docs/plans.md` for task definitions and `.forge/state/current/queue.json` for current status when choosing one or more currently available pending tasks
 5. Implement, validate, and update queue status for each completed or blocked task
 6. Use each task's `verification` and the milestone `validation_matrix` to decide what tests or smoke checks must change
 7. Add a short note under docs/documentation.md Session Notes
+
+## Lean Run Profile
+- Assume autonomous runs start with a lean MCP profile
+- Enable MCPs only when `docs/prompt.md` explicitly opts in through `[orchestration].run_mcps`
+- If an MCP is unavailable, continue with the lean profile unless the milestone truly depends on that capability
 
 ## Optional Parallelism
 - Keep one lead agent as the only writer for `.forge/state/current/queue.json`, `docs/documentation.md`, QA, and checkpointing

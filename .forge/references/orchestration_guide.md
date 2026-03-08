@@ -63,11 +63,21 @@ Run isolation:
 
 1. Sync durable docs into runtime state
 2. Create or enter an isolated run worktree
-3. Run the autonomous session loop for the active milestone
-4. Checkpoint via `./forge qa`, reusing the latest passing result when the workspace is unchanged
-5. Stop on milestone completion, blocked-only state, validation failure, or stall
-6. Land the approved worktree back to the main branch during close
-7. Archive the final approved worktree runtime state into the main workspace
+3. Build a slim session brief instead of inlining full durable docs into the prompt
+4. Instruct the agent to read the real files directly from disk before making decisions
+5. Apply a lean run MCP profile. By default no MCP servers are enabled unless `docs/prompt.md` explicitly opts in through `orchestration.run_mcps`
+6. Run the autonomous session loop for the active milestone
+7. Checkpoint via `./forge qa`, reusing the latest passing result when the workspace is unchanged
+8. Stop on milestone completion, blocked-only state, validation failure, or stall
+9. Land the approved worktree back to the main branch during close
+10. Archive the final approved worktree runtime state into the main workspace
+
+The session brief should contain only compact orientation data:
+- active milestone summary
+- available and blocked task summary
+- last QA result
+- a short tail of recent notes and commits
+- the exact files the agent must read directly
 
 ## Validation Model
 
@@ -93,6 +103,8 @@ Agents own:
 - using repo-owned tests and smoke scripts, not hiding verification logic inside ad hoc shell one-offs
 - keeping one lead agent as the only writer when optional sub-agents or teammates are used
 - logging worker start/finish so parallel work is observable later
+- reading durable docs from disk instead of relying on large prompt inlining
+- staying on the lean run MCP profile unless the milestone explicitly requires more
 
 ## Anti-Patterns
 

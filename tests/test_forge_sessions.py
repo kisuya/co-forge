@@ -120,6 +120,13 @@ class ForgeSessionTest(unittest.TestCase):
                 f"""\
                 #!/bin/bash
                 set -euo pipefail
+                if [ -n "${{FORGE_CAPTURE_CODEX_ARGS:-}}" ]; then
+                  printf '%s\n' "$@" > "$FORGE_CAPTURE_CODEX_ARGS"
+                fi
+                if [ -n "${{FORGE_CAPTURE_CODEX_PROMPT:-}}" ]; then
+                  last_arg="${{!#}}"
+                  printf '%s' "$last_arg" > "$FORGE_CAPTURE_CODEX_PROMPT"
+                fi
                 case "${{FORGE_TEST_AGENT_MODE:-{mode}}}" in
                   progress)
                     printf 'progress\\n' >> milestone-output.txt
@@ -846,6 +853,36 @@ PY
         self.assertIn("Reached max sessions.", result.stdout)
         current = json.loads((self.project / ".forge/runs/current.json").read_text(encoding="utf-8"))
         self.assertEqual(current["status"], "max_sessions")
+
+    def test_orchestrator_uses_slim_prompt_and_run_specific_mcp_override(self) -> None:
+        self.write_active_plan()
+        documentation = self.project / "docs/documentation.md"
+        documentation.write_text(
+            documentation.read_text(encoding="utf-8") + "\n## Extra\n" + ("very long context line\n" * 40),
+            encoding="utf-8",
+        )
+        run(["git", "add", "docs/documentation.md"], self.project)
+        run(["git", "commit", "-m", "Add long documentation note"], self.project)
+        prepared = run(
+            ["python3", ".forge/scripts/runtime.py", "prepare-run", "codex", "--run-id", "prompt-check"],
+            self.project,
+        )
+        worktree = Path(json.loads(prepared.stdout)["worktree_path"])
+        env = self.install_stub_codex("noop")
+        args_path = worktree / "captured-codex-args.txt"
+        prompt_path = worktree / "captured-codex-prompt.txt"
+        env["FORGE_CAPTURE_CODEX_ARGS"] = str(args_path)
+        env["FORGE_CAPTURE_CODEX_PROMPT"] = str(prompt_path)
+
+        run(["./.forge/scripts/orchestrate.sh", "codex", "1"], worktree, env=env)
+
+        args_output = args_path.read_text(encoding="utf-8")
+        prompt_output = prompt_path.read_text(encoding="utf-8")
+        self.assertIn("mcp_servers={}", args_output)
+        self.assertIn("Read these files directly", prompt_output)
+        self.assertIn("AGENTS.md", prompt_output)
+        self.assertNotIn("## Durable Spec", prompt_output)
+        self.assertNotIn("very long context line", prompt_output)
 
     def test_orchestrator_ignores_documentation_note_only_churn(self) -> None:
         self.write_active_plan()

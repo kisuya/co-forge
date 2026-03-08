@@ -21,6 +21,9 @@ validate_surface = []
 [orchestration]
 default_agent = "codex"
 session_task_budget = 6
+# Keep this empty by default. Only opt into MCPs required for the active milestone,
+# for example ["playwright"] for browser QA or ["openaiDeveloperDocs"] for doc lookup.
+run_mcps = []
 
 [agents.codex]
 model = "gpt-5.4"

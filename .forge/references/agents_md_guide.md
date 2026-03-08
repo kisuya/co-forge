@@ -19,6 +19,8 @@ Good examples:
 - use `docs/plans.md` for task definitions and update only `.forge/state/current/queue.json` task status/notes
 - run `./forge qa` before leaving a session
 - append notes to `docs/documentation.md`
+- start from a slim run brief, then read the real files from disk
+- keep MCP usage opt-in and milestone-specific
 - never run `git commit`
 - never weaken or delete tests to hide failures
 - allow existing tests to change only when behavior changed or the test is incorrect/flaky

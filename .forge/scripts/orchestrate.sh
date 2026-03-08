@@ -66,89 +66,61 @@ orchestration_setting_value() {
   python3 "$RUNTIME" orchestration-setting "$key"
 }
 
+json_field() {
+  local key="$1"
+  python3 -c "import json,sys; print(json.load(sys.stdin)[\"$key\"])"
+}
+
 build_prompt() {
-  local prompt_doc plans_doc documentation_doc agents_doc queue_json recent_commits
-  prompt_doc="$(cat docs/prompt.md 2>/dev/null)"
-  plans_doc="$(cat docs/plans.md 2>/dev/null)"
-  documentation_doc="$(cat docs/documentation.md 2>/dev/null)"
-  agents_doc="$(cat AGENTS.md 2>/dev/null)"
-  queue_json="$(cat .forge/state/current/queue.json 2>/dev/null)"
-  recent_commits="$(git log --oneline -5 2>/dev/null || true)"
+  local session_brief
+  session_brief="$(python3 "$RUNTIME" session-brief --recent-notes 3 --recent-commits 2 2>/dev/null)"
 
   cat <<PROMPT
-Read the durable docs and operate as a long-horizon coding agent inside the active milestone.
+Operate as the lead coding agent for the active Forge milestone.
 
-## Session Protocol
+The summary below is only orientation. The repo files are the source of truth, so read them directly before making decisions.
+
+## Required startup steps
 1. Run: ./forge status
-2. Read AGENTS.md, docs/prompt.md, docs/plans.md, docs/documentation.md
-3. Read docs/plans.md for task definitions and .forge/state/current/queue.json for current status, then choose one or more currently available tasks whose combined scope is still a tight, reviewable slice of the active milestone
-4. Implement those tasks without expanding scope beyond the active milestone
-5. Update .forge/state/current/queue.json:
-   - status="done" when each completed task is complete
-   - status="blocked" and notes when a task is truly blocked
-6. Append a short note under "## Session Notes" in docs/documentation.md describing what changed and what is next
+2. Read these files directly:
+   - AGENTS.md
+   - docs/prompt.md
+   - docs/plans.md
+   - docs/documentation.md
+   - .forge/state/current/queue.json
+3. Choose one or more currently available tasks whose combined scope is still a tight, reviewable slice of the active milestone
+4. Implement only inside the active milestone
+5. Update .forge/state/current/queue.json task status/notes when work is done or truly blocked
+6. Add a short note under docs/documentation.md Session Notes
 7. Run: ./forge qa
-8. If QA fails, fix the failures before exiting
-9. Stop after at most $SESSION_TASK_BUDGET completed tasks, or earlier if the remaining tasks are blocked or unavailable
-10. Never edit docs/plans.md to open the next milestone. Humans do that via forge-open.
+8. If QA fails, fix it before exiting
+9. Stop after at most $SESSION_TASK_BUDGET completed tasks, or earlier if remaining work is blocked or unavailable
 
-## Optional Parallelism
-Use sub-agents or teammates only when they reduce wall-clock time without creating coordination risk.
+## Execution rules
+- Treat docs/plans.md as the source of truth for scope and task definitions
+- Treat AGENTS.md and docs/prompt.md as the execution contract
+- Do not edit README.md, skill docs, or harness sources while implementing the product milestone
+- Keep diffs scoped to the current task slice
+- Use the same validation surface humans will use
+- Do not run git commit; checkpointing happens outside the agent session
+- If you use workers, follow AGENTS.md optional parallelism rules and log worker start/finish via runtime.py
 
-Rules:
-- The lead agent remains the only writer for .forge/state/current/queue.json, docs/documentation.md, checkpointing, QA, and landing
-- Spawn workers only for:
-  - read-only exploration
-  - sidecar verification
-  - implementation slices with clearly disjoint owned_paths
-- If ownership is unclear, stay serial
-- Before a worker starts, log it:
-  python3 .forge/scripts/runtime.py worker-start --worker-id <id> --role <explorer|worker|verifier> [--task-id <task>]... [--owned-path <path>]...
-- After a worker finishes, log it:
-  python3 .forge/scripts/runtime.py worker-finish --worker-id <id> --status <success|failed|cancelled> --summary "<what happened>"
-- Never give two write-capable workers overlapping owned_paths
-- Workers must not edit docs/plans.md, .forge/state/current/queue.json, or run checkpoint/landing commands
-- The lead agent integrates worker output, resolves conflicts, updates queue state, and runs QA
-
-## Durable Spec
-### docs/prompt.md
-$prompt_doc
-
-### docs/plans.md
-$plans_doc
-
-### AGENTS.md
-$agents_doc
-
-### docs/documentation.md
-$documentation_doc
-
-## Derived Runtime State
-### queue.json (execution state only)
-$queue_json
-
-## Recent Commits
-$recent_commits
-
-## Rules
-- Treat docs/plans.md as the source of truth for milestone scope
-- Use docs/prompt.md and AGENTS.md for execution constraints and validation expectations
-- Do not edit README.md, skill docs, or harness sources while implementing a product milestone
-- Keep diffs scoped to the current available task slice
-- Use the same user-facing validation surface that humans will use
-- Do not run git commit; checkpointing is handled outside the agent session
+## Session brief
+$session_brief
 PROMPT
 }
 
 run_agent() {
   local prompt="$1"
-  local agent_model agent_profile agent_effort
+  local agent_model agent_profile agent_effort mcp_json mcp_config
   local -a cmd
+  mcp_json="$(python3 "$RUNTIME" run-mcp-config "$AGENT")"
+  mcp_config="$(printf '%s' "$mcp_json" | json_field config)"
   agent_model="$(agent_profile_value "$AGENT" model)"
   agent_profile="$(agent_profile_value "$AGENT" profile)"
   agent_effort="$(agent_profile_value "$AGENT" effort)"
   if [ "$AGENT" = "codex" ]; then
-    cmd=(codex exec --sandbox danger-full-access)
+    cmd=(codex exec --sandbox danger-full-access -c "$mcp_config")
     if [ -n "$agent_model" ]; then
       cmd+=(--model "$agent_model")
     fi
@@ -157,7 +129,7 @@ run_agent() {
     fi
     cmd+=("$prompt")
   else
-    cmd=(claude -p --verbose --output-format stream-json --dangerously-skip-permissions)
+    cmd=(claude -p --verbose --output-format stream-json --dangerously-skip-permissions --strict-mcp-config --mcp-config "$mcp_config")
     if [ -n "$agent_model" ]; then
       cmd+=(--model "$agent_model")
     fi
