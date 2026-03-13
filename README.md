@@ -274,6 +274,8 @@ npm test
 npm pack --json --dry-run
 ```
 
+Maintainers: npm release workflow and git/npm sync rules are documented in [RELEASING.md](/Users/jeongkisu/dev/co-forge/RELEASING.md).
+
 ## License
 
 MIT
