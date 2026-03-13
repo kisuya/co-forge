@@ -52,7 +52,7 @@ proxy_into_active_worktree() {
 cmd="${1:-}"
 if [ -z "$cmd" ]; then
   cat <<'EOF'
-Usage: ./forge <run|status|doctor|upgrade> [args]
+Usage: ./forge <run|status|doctor> [args]
 Advanced: ./forge qa, ./forge archive <name>
 EOF
   exit 1
@@ -73,9 +73,6 @@ case "$cmd" in
     ;;
   archive)
     exec python3 "$RUNTIME_PY" archive "$@"
-    ;;
-  upgrade)
-    exec "$SCRIPT_DIR/upgrade.sh" "$@"
     ;;
   run)
     agent=""

@@ -58,6 +58,9 @@ Keep the discussion on user behavior before implementation details.
 
 ### Step 2: Draft the durable docs
 
+If `AGENTS.md` or `docs/prompt.md` already exist, review and normalize them instead of forcing a separate manual scaffold path.
+`forge-init` should remain the single guided entrypoint for first-time setup.
+
 Write:
 - `docs/prd.md`
 - `docs/architecture.md`
@@ -98,6 +101,8 @@ bash .forge/scripts/scaffold.sh
 ./forge doctor
 ./forge status
 ```
+
+Even when docs already existed before the session, keep this finalize step inside `forge-init` after review and approval.
 
 ## Handoff
 

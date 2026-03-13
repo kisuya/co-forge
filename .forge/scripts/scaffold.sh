@@ -50,7 +50,7 @@ if [ ! -d ".git" ]; then
 fi
 
 echo "Verifying tracked runtime entrypoints..."
-for script in forge runtime.py init.sh checkpoint.sh new_project.sh orchestrate.sh prepare_run.sh scaffold.sh upgrade.sh; do
+for script in forge runtime.py init.sh checkpoint.sh new_project.sh orchestrate.sh prepare_run.sh scaffold.sh; do
   if [ ! -e ".forge/scripts/$script" ]; then
     echo "Error: .forge/scripts/$script not found. This project must keep tracked Forge sources." >&2
     exit 1

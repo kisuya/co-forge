@@ -1,0 +1,23 @@
+{
+  "name": "co-forge",
+  "version": "0.1.0",
+  "description": "CLI installer for the co-forge project harness",
+  "bin": {
+    "co-forge": "bin/co-forge.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "forge",
+    ".forge",
+    ".claude",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "python3 -m unittest discover tests"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
