@@ -1,7 +1,22 @@
 {
   "name": "co-forge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI installer for the co-forge project harness",
+  "keywords": [
+    "ai",
+    "agent",
+    "cli",
+    "workflow",
+    "forge"
+  ],
+  "homepage": "https://github.com/kisuya/co-forge#readme",
+  "bugs": {
+    "url": "https://github.com/kisuya/co-forge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kisuya/co-forge.git"
+  },
   "bin": {
     "co-forge": "bin/co-forge.js"
   },
