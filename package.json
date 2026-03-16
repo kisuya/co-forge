@@ -1,6 +1,6 @@
 {
   "name": "co-forge",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI installer for the co-forge project harness",
   "keywords": [
     "ai",
