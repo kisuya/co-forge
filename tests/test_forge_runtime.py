@@ -510,6 +510,7 @@ class ForgeRuntimeTest(unittest.TestCase):
         self.assertEqual(current_run["status"], "idle")
         worktree = Path(current_run["worktree_path"])
         self.assertTrue((worktree / ".forge/run-context.json").exists())
+        self.assertTrue((worktree / ".forge/scripts/runtime.py").exists())
 
         root_status = run(["./forge", "status"], self.project)
         self.assertIn(str(worktree), root_status.stdout)
@@ -523,6 +524,22 @@ class ForgeRuntimeTest(unittest.TestCase):
         archive_from_worktree = run(["./forge", "archive", "blocked-phase"], worktree, check=False)
         self.assertNotEqual(archive_from_worktree.returncode, 0)
         self.assertIn("land-current", archive_from_worktree.stderr)
+
+    def test_run_bootstraps_runtime_into_worktree_when_harness_is_gitignored(self) -> None:
+        gitignore = self.project / ".gitignore"
+        gitignore.write_text(gitignore.read_text(encoding="utf-8") + "\n.forge/\n", encoding="utf-8")
+        run(["git", "rm", "--cached", "-r", ".forge"], self.project)
+        run(["git", "add", ".gitignore"], self.project)
+        run(["git", "commit", "-m", "Ignore forge runtime"], self.project)
+
+        self.assertTrue((self.project / ".forge/scripts/runtime.py").exists())
+
+        run_result = run(["./forge", "run", "codex"], self.project)
+        self.assertIn("No active milestone. Run forge-open first.", run_result.stdout)
+
+        current_run = json.loads((self.project / ".forge/runs/current.json").read_text(encoding="utf-8"))
+        worktree = Path(current_run["worktree_path"])
+        self.assertTrue((worktree / ".forge/scripts/runtime.py").exists())
 
     def test_qa_reuses_recent_pass_when_workspace_is_unchanged(self) -> None:
         counter_dir = Path(tempfile.mkdtemp(prefix="forge-qa-counter."))

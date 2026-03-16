@@ -40,6 +40,21 @@ ARCHIVE_SNAPSHOT = [
     QUEUE_PATH,
     VALIDATION_REPORT_PATH,
 ]
+WORKTREE_BOOTSTRAP_FILES = [
+    Path("forge"),
+    Path("AGENTS.md"),
+    Path("docs/prompt.md"),
+    Path("docs/plans.md"),
+    Path("docs/documentation.md"),
+    Path("docs/prd.md"),
+    Path("docs/architecture.md"),
+    Path("docs/backlog.md"),
+]
+WORKTREE_BOOTSTRAP_DIRS = [
+    Path(".forge/scripts"),
+    Path(".forge/templates"),
+    Path(".forge/references"),
+]
 MILESTONE_STATUSES = {"planned", "active", "done", "blocked"}
 TASK_STATUSES = {"pending", "done", "blocked"}
 RUN_RESUMABLE_STATUSES = {"prepared", "interrupted", "needs_human", "failed", "max_sessions"}
@@ -1027,6 +1042,38 @@ def ensure_clean_worktree(root: Path) -> None:
         )
 
 
+def remove_existing_path(path: Path) -> None:
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.is_dir():
+        shutil.rmtree(path)
+
+
+def copy_bootstrap_path(source: Path, destination: Path) -> None:
+    if not source.exists() and not source.is_symlink():
+        return
+    if source.is_symlink():
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists() or destination.is_symlink():
+            remove_existing_path(destination)
+        os.symlink(os.readlink(source), destination)
+        return
+    if source.is_dir():
+        if destination.exists() and not destination.is_dir():
+            remove_existing_path(destination)
+        shutil.copytree(source, destination, symlinks=True, dirs_exist_ok=True)
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.is_symlink() or destination.is_dir():
+        remove_existing_path(destination)
+    shutil.copy2(source, destination)
+
+
+def bootstrap_worktree_runtime(main_root: Path, worktree_path: Path) -> None:
+    for relative in WORKTREE_BOOTSTRAP_DIRS + WORKTREE_BOOTSTRAP_FILES:
+        copy_bootstrap_path(main_root / relative, worktree_path / relative)
+
+
 def ensure_documentation_markers(root: Path) -> Path:
     path = root / "docs/documentation.md"
     if not path.exists():
@@ -1803,16 +1850,32 @@ def prepare_run(root: Path, main_root: Path, agent: str, run_id: str | None = No
             "pid": None,
         },
     )
-    context_path = worktree_path / RUN_CONTEXT_PATH
-    context_path.parent.mkdir(parents=True, exist_ok=True)
-    write_json(context_path, {"run_id": run_id, "main_root": str(main_root)})
-    run([sys.executable, str(worktree_path / ".forge/scripts/runtime.py"), "sync"], cwd=worktree_path, capture_output=True)
-    prepare_runtime = worktree_path / ".forge/scripts/prepare_runtime.sh"
-    if prepare_runtime.exists():
-        result = run([str(prepare_runtime)], cwd=worktree_path, capture_output=True, check=False)
-        if result.returncode != 0:
-            update_run_state(main_root, run_id, status="failed", updated_at=time.strftime("%Y-%m-%d %H:%M:%S"))
-            raise ForgeError((result.stderr or result.stdout or "prepare_runtime.sh failed").strip())
+    payload = {
+        "run_id": run_id,
+        "branch": branch_name,
+        "worktree_path": str(worktree_path),
+    }
+    try:
+        bootstrap_worktree_runtime(main_root, worktree_path)
+        context_path = worktree_path / RUN_CONTEXT_PATH
+        context_path.parent.mkdir(parents=True, exist_ok=True)
+        write_json(context_path, {"run_id": run_id, "main_root": str(main_root)})
+        worktree_runtime = worktree_path / ".forge/scripts/runtime.py"
+        if not worktree_runtime.exists():
+            raise ForgeError(
+                f"Active run worktree is missing {worktree_runtime.relative_to(worktree_path)}. "
+                "Ensure the installed co-forge runtime exists in the main checkout before running ./forge run."
+            )
+        run([sys.executable, str(worktree_runtime), "sync"], cwd=worktree_path, capture_output=True)
+        prepare_runtime = worktree_path / ".forge/scripts/prepare_runtime.sh"
+        if prepare_runtime.exists():
+            result = run([str(prepare_runtime)], cwd=worktree_path, capture_output=True, check=False)
+            if result.returncode != 0:
+                update_run_state(main_root, run_id, status="failed", updated_at=time.strftime("%Y-%m-%d %H:%M:%S"))
+                raise ForgeError((result.stderr or result.stdout or "prepare_runtime.sh failed").strip())
+    except Exception:
+        cleanup_run_artifacts(main_root, payload)
+        raise
     return {
         "run_id": run_id,
         "branch": branch_name,
